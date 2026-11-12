@@ -50,8 +50,11 @@ const FINGERPRINTS = [
   // Workspace root path (parent of any dsh-* project dir this repo sits in).
   { name: "workspace root path", re: new RegExp(HOME.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + "/deepseek", "g") },
 ];
-// Username fingerprint only when it is not a generic name.
-if (USER && !["root", "user", "admin", "runner", "github"].includes(USER)) {
+// Username fingerprint only when it is not a generic name. "agent" is in the
+// list because this build machine's account is literally named agent while
+// "agent" is also a core DSH API identifier (exec.agent.session...) — the
+// home-path and absolute-path fingerprints still catch real leaks.
+if (USER && !["root", "user", "admin", "runner", "github", "agent"].includes(USER)) {
   FINGERPRINTS.push({
     name: "username",
     re: new RegExp(`(?<![A-Za-z0-9])${USER.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}(?![A-Za-z0-9])`, "g"),
