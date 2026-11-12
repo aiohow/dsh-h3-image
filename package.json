@@ -1,0 +1,59 @@
+{
+  "name": "dsh-h3-image",
+  "version": "0.0.1",
+  "description": "Fully local text-to-image on Apple Silicon using the open-source MiniMax H3-Image model on MLX. A setup wizard builds the pinned engine and weights on your machine once; generation then runs offline with no keys and no cloud calls.",
+  "type": "module",
+  "main": "./lib/index.js",
+  "scripts": {
+    "test": "node --test",
+    "prepack": "node scripts/check-version-consistency.mjs && node scripts/check-release-safety.mjs",
+    "release": "node scripts/check-version-consistency.mjs && node scripts/check-release-safety.mjs && npm pack && node scripts/check-release-safety.mjs --tarball \"$(ls -t *.tgz | head -1)\""
+  },
+  "exports": {
+    ".": {
+      "default": "./lib/index.js"
+    },
+    "./cordis.patch.yml": "./cordis.patch.yml",
+    "./locale/*.json": "./locale/*.json",
+    "./package.json": "./package.json",
+    "./icon": "./icon.svg",
+    "./LICENSE": "./LICENSE"
+  },
+  "files": [
+    "lib",
+    "cordis.patch.yml",
+    "locale",
+    "icon.svg",
+    "LICENSE",
+    "THIRD_PARTY_NOTICES.md",
+    "SECURITY.md",
+    "README.md",
+    "package.json"
+  ],
+  "sideEffects": false,
+  "engines": {
+    "node": "^22.19.0 || >=24.0.0",
+    "dsh": ">=0.2.2-rc.1"
+  },
+  "keywords": [
+    "dsh",
+    "dsh-plugin",
+    "cordis",
+    "image-generation",
+    "text-to-image",
+    "mlx",
+    "local",
+    "minimax-h3"
+  ],
+  "license": "MIT",
+  "author": "aiohow",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/aiohow/dsh-h3-image.git"
+  },
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    }
+  }
+}

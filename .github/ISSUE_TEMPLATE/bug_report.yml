@@ -1,0 +1,56 @@
+name: Bug report
+description: Something the plugin does is broken
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to file a report. Please fill everything out —
+        the environment checklist below is what makes a report actionable.
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened
+      description: Steps to reproduce, what you expected, what you got (paste the tool's JSON output when possible — it is designed to be shared; it contains no secrets by design).
+      placeholder: |
+        1. Called h3_status …
+        2. Expected …
+        3. Got …
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: |
+        Machine and software versions. Do NOT paste anything containing paths
+        or names you do not want public.
+      value: |
+        - Mac model / chip:
+        - Unified memory (GB):
+        - macOS version:
+        - dsh-h3-image version:
+        - DSH version:
+        - Free disk on the volume holding the model dir:
+    validations:
+      required: true
+  - type: dropdown
+    id: milestone
+    attributes:
+      label: Which area
+      options:
+        - h3_status (environment check)
+        - h3_setup (wizard)
+        - h3_image (generation)
+        - Install / bundle level
+    validations:
+      required: true
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: Pre-flight
+      options:
+        - label: I am running on Apple Silicon (the engine does not support Intel/Windows/Linux)
+          required: true
+        - label: My output above contains no secrets or paths I want kept private
+          required: true

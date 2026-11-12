@@ -1,0 +1,8 @@
+# dsh-h3-image bundle patch: insert this package's Host half.
+# Loaded only when the profile selects the bundle
+#   (dsh.profile.bundles: [..., "dsh-h3-image"]) or the entry is added
+# to the profile's cordis.patch.yml as an `insert`.
+- insert:
+    - id: h3-image
+      name: dsh-h3-image
+      config: {}

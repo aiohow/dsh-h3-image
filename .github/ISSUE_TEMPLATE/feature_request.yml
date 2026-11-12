@@ -1,0 +1,24 @@
+name: Feature request
+description: Suggest an idea for this plugin
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem are you trying to solve?
+      description: Not the feature itself — the problem. What were you doing and what got in the way?
+    validations:
+      required: true
+  - type: textarea
+    id: solution
+    attributes:
+      label: How would you like it to work?
+      description: Tool calls, wizard steps, defaults — as concrete as you can.
+  - type: markdown
+    attributes:
+      value: |
+        Note: reference-image / editing inputs are currently outside the
+        upstream MLX engine's capability surface and will be declined by
+        `h3_image` until upstream exposes them. Requests to "just add it"
+        without upstream support will be linked to the maintenance flow
+        instead of implemented.
