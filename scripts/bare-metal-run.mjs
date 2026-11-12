@@ -150,26 +150,41 @@ say(`engine: HEAD independently verified == pinned ${head.slice(0, 12)}`);
     try { return Object.keys(JSON.parse(readFileSync(stateFile, "utf8")).done); } catch { return []; }
   };
 
-  const submit = await runSetup("weights", {}, resolved, CONFIG, {});
-  checkFingerprint("weights-submit", submit);
-  if (!submit.ok && submit.state !== "running") throw new Error(`weights submit failed: ${JSON.stringify(submit).slice(0, 300)}`);
-  const firstJob = submit.job_id;
-  say(`weights: job ${firstJob} ${submit.noop ? "attached (already running)" : "submitted"} — kill-once resume test armed`);
-
-  // Wait for the first FINISHED shard on disk, then kill the whole group.
-  let killed = false;
-  for (;;) {
-    await new Promise((res) => setTimeout(res, 30_000));
-    if (!killed && doneShards().length >= 1) {
-      say(`weights: ${doneShards().length} shard(s) finished on disk — KILLING ${firstJob} to test resume`);
-      await killJob(resolved.model_dir, firstJob);
-      killed = true;
-      report.notes.push(`kill point: convert_state.done=[${doneShards().join(",")}] after first converted`);
-      save();
+  // Idempotent across re-runs: the kill-once phase happens exactly once.
+  const killNote = report.notes.find((n) => n.startsWith("kill point:"));
+  let firstJob;
+  if (killNote) {
+    firstJob = report.steps.weights?.killed_job ?? report.notes.find((n) => n.includes("job weights-"))?.match(/weights-\d{8}-\d{6}-\w{6}/)?.[0];
+    // Recover the killed job id from the jobs dir if the note lacks it.
+    if (!firstJob) {
+      const names = execSync(`ls ${jDir} | grep '^weights-'`).toString().trim().split("\n");
+      firstJob = names.map((n) => n.replace(/\.json$/, "")).find((id) => {
+        try { return JSON.parse(readFileSync(join(jDir, `${id}.json`), "utf8")).status === "killed"; } catch { return false; }
+      });
     }
-    const p = await runSetup("poll", { job_id: firstJob }, resolved, CONFIG, {});
-    if (p.state === "failed" || p.state === "interrupted" || p.state === "killed") break;
-    if (p.state === "done") break; // finished before we could kill — resume proof then impossible; note it
+    say(`weights: kill-once already recorded (${killNote.slice(0, 80)}) — resuming to completion`);
+  } else {
+    const submit = await runSetup("weights", {}, resolved, CONFIG, {});
+    checkFingerprint("weights-submit", submit);
+    if (!submit.ok && submit.state !== "running") throw new Error(`weights submit failed: ${JSON.stringify(submit).slice(0, 300)}`);
+    firstJob = submit.job_id;
+    say(`weights: job ${firstJob} submitted — kill-once resume test armed`);
+    // Wait for the first FINISHED shard on disk, then kill the whole group.
+    let killed = false;
+    for (;;) {
+      await new Promise((res) => setTimeout(res, 30_000));
+      if (!killed && doneShards().length >= 1) {
+        say(`weights: ${doneShards().length} shard(s) finished on disk — KILLING ${firstJob} to test resume`);
+        await killJob(resolved.model_dir, firstJob);
+        killed = true;
+        report.notes.push(`kill point: convert_state.done=[${doneShards().join(",")}] after first converted`);
+        report.steps.weights = { killed_job: firstJob };
+        save();
+      }
+      const p = await runSetup("poll", { job_id: firstJob }, resolved, CONFIG, {});
+      if (p.state === "failed" || p.state === "interrupted" || p.state === "killed") break;
+      if (p.state === "done") break; // finished before we could kill — resume proof then impossible; note it
+    }
   }
   const firstLog = fullLog(firstJob);
   const doneIdx = new Set([...firstLog.matchAll(/\[(\d+)\/12\] converted/g)].map((m) => m[1]));
