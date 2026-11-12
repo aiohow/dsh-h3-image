@@ -65,7 +65,7 @@ if (USER && !["root", "user", "admin", "runner", "github", "agent"].includes(USE
 // mean nothing — and leak — outside this machine).
 const INTERNAL_PATH_RE = /(?:deliverables\/|\/Users\/[^/\s]+\/|C:\\Users\\[^\\\s]+\\)/g;
 
-const TEXT_EXT = new Set([".js", ".mjs", ".cjs", ".json", ".md", ".yml", ".yaml", ".txt", ".svg", ".html", ".css", ".ts"]);
+const TEXT_EXT = new Set([".js", ".mjs", ".cjs", ".json", ".md", ".yml", ".yaml", ".txt", ".svg", ".html", ".css", ".ts", ".py"]);
 const SKIP_DIRS = new Set(["node_modules", ".git", "dist", "out", "test", "scripts", ".github", "docs"]);
 // Local-only operational documents (append-only handoff notes) legitimately
 // carry machine paths and are NOT in package.json `files` — the source pass

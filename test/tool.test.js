@@ -105,11 +105,44 @@ test("h3_setup license display/accept/reset round-trip is honest", async () => {
   await rm(dir, { recursive: true, force: true });
 });
 
-test("h3_setup unknown actions stay structured not_implemented", async () => {
+test("h3_setup weights without license acceptance returns the license envelope", async () => {
   const dir = await mkdtemp(join(tmpdir(), "h3-tool-"));
   const { tools } = await boot({ model_dir: dir }, { workspace: dir });
   const r = await tools.get("h3_setup").execute({ action: "weights" });
   assert.equal(r.ok, false);
-  assert.equal(r.error_type, "not_implemented");
+  assert.equal(r.error_type, "license");
+  await rm(dir, { recursive: true, force: true });
+});
+
+test("h3_setup poll without job_id is a structured engine error", async () => {
+  const dir = await mkdtemp(join(tmpdir(), "h3-tool-"));
+  const { tools } = await boot({ model_dir: dir }, { workspace: dir });
+  const r = await tools.get("h3_setup").execute({ action: "poll" });
+  assert.equal(r.ok, false);
+  assert.equal(r.error_type, "engine");
+  assert.match(r.message, /job_id/);
+  await rm(dir, { recursive: true, force: true });
+});
+
+test("h3_setup status returns the checklist plus job list and license line", async () => {
+  const dir = await mkdtemp(join(tmpdir(), "h3-tool-"));
+  const { tools } = await boot({ model_dir: dir }, { workspace: dir });
+  const r = await tools.get("h3_setup").execute({ action: "status" });
+  assert.equal(r.ok, true);
+  assert.ok(r.status && Array.isArray(r.status.checks));
+  assert.ok(Array.isArray(r.jobs));
+  assert.equal(r.license, null); // fresh dir: no record
+  await rm(dir, { recursive: true, force: true });
+});
+
+test("h3_setup smoke preconditions gate before any job submission", async () => {
+  const dir = await mkdtemp(join(tmpdir(), "h3-tool-"));
+  const { tools } = await boot({ model_dir: dir }, { workspace: dir });
+  const r = await tools.get("h3_setup").execute({ action: "smoke" });
+  assert.equal(r.ok, false);
+  assert.ok(["engine", "verify"].includes(r.error_type), r.error_type);
+  // No job may exist for a gated step.
+  const st = await tools.get("h3_setup").execute({ action: "status" });
+  assert.equal(st.jobs.length, 0);
   await rm(dir, { recursive: true, force: true });
 });

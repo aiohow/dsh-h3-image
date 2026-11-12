@@ -27,11 +27,11 @@ dsh-h3-image/
 DSH Host ──(spawn, 每任务)──> venv python generate_h3_image.py ──> PNG + metrics.json
                 │
                 └─ weights 走 mmap：冷启动 ~2s（实测 dit_load 0.53s），进程退出即归还 27GB
-setup 长任务（weights/convert）同样子进程化，stdout 逐行解析进度 → job 表 → 轮询返回
+setup 长任务（engine/weights/smoke）由脱离进程组的 supervisor 承载，stdout 逐行解析进度 → 文件 job 表 → 轮询返回（详见 §3.1）
 ```
 
 - **v1 不做热常驻**（serve_image.py keep_warm 收益仅 ~2s，27GB 常驻不值当；留 v2 评估）。
-- 子进程一律 `run_in_background` 语义由 jobs.js 管理：pid+状态落盘到插件 storage，DSH 重启后可"认领或回收"孤儿（回收=kill+标记 failed，不假装完成）。
+- setup 长任务的 supervisor 自成进程组、不挂 DSH 进程树：DSH 重启任务照跑；下次激活 reapOrphans 只把"pid 已死且无 result"的记为 `interrupted`（不假装完成），活着的一律不动（见 §3.1）。生图子进程则相反——插件卸载即 killActive（27GB 进程不留给禁用态插件）。
 - 输出路径强制约束：默认 `<workspace>/generated-images/`；`output_dir` 参数解析后必须仍在工作区内，否则拒绝（防越权写）。
 
 ## 3. setup 状态机
@@ -39,14 +39,36 @@ setup 长任务（weights/convert）同样子进程化，stdout 逐行解析进�
 ```
 check ──ok──> ready
   │
-  ├─ python 缺 → venv（解释器发现：brew/python.org/pyenv/uv，≥3.13；无则指引+停）
-  ├─ 引擎缺/commit 不符 → engine（clone + checkout pinned commit；main 无图像脚本=已知坑）
+  ├─ python 缺 → venv（只建环境：解释器发现 config.python_bin→PATH→brew→python.org→uv→pyenv，≥3.13；无则指引+停）
+  ├─ 引擎缺/commit 不符 → engine（clone --no-checkout + checkout pinned commit + pip install -r requirements.txt）
   ├─ 许可未接受 → license（展示要点+地域条款，用户确认后落盘 accepted@timestamp）
-  ├─ 权重缺 → weights（复用探测 sha256 命中→跳过；否则 fetch 逐片下载+转换+删源，断点续传）
-  └─ 全绿 → smoke（一张 1MP 小图端到端）→ ready
+  ├─ 权重缺 → weights（复用候选 sha256 实证命中→符号链接复用；否则 fetch 逐片下载+转换+删源，断点续传；文本编码器由 assets/te_setup.py 按钉定 revision 拉取+校验）
+  └─ 全绿 → smoke（一张 1MP 小图端到端，PNG 结构校验通过才算过）→ ready
 ```
 
-每状态持久化到插件 storage 的 state.json（原子写 tmp+rename，与引擎 metrics 同风格）；`reset` 仅清状态文件不动资产。
+工序顺序为实测定案（非推测）：引擎依赖清单在引擎仓库的 requirements.txt 里，所以 **venv 先建、pip 安装在 engine 步骤末尾**（clone → checkout → pip）。钉定 commit 不在 main 谱系上（实测：仅 `refs/heads/phosphene/v5.0-image5` 可达），clone 用 `--no-checkout` 直接落钉定 commit，避开"main 无图像脚本"已知坑。
+
+每状态持久化到插件 storage 的 state.json（原子写 tmp+rename，与引擎 metrics 同风格）；`reset` 仅清状态文件不动资产。**重入判据是磁盘实探，不是状态文件**——状态文件只是记录，重跑永远重新探测（HEAD、manifest、PNG），证伪即改判。
+
+### 3.1 长任务 job 架构（D4 三段式，M2 落地）
+
+engine/weights/smoke 三步是长任务（分钟~小时级），执行模型：
+
+```
+h3_setup action=<step>  ──submit──>  记录 <id>.json + spec，spawn 脱离进程组的
+                                      supervisor（lib/job-supervisor.mjs，无 shell，
+                                      顺序执行 argv 链，日志追加 <id>.log，
+                                      原子写 <id>.result.json）
+                             返回 { job_id, next: "poll" }   ← 工具调用秒级返回
+h3_setup action=poll     ──读文件 + pid 探活──> { state, progress, log_tail }
+h3_setup action=kill     ──kill(-pgid)──> 已完成的分片留在原地（续传不重下）
+```
+
+- **supervisor 独立于 DSH 进程树**：DSH 重启/插件热重载不杀任务；插件侧只读文件 + `kill(pid,0)` 探活，从不持有子进程句柄。
+- **`interrupted` 语义**：记录 running 但 pid 已消失且无 result 文件 → 标 `interrupted`，永不报成完成。激活时 `reapOrphans` 只标死任务，**running 且 pid 活着的任务不动**（多小时下载跨插件重载存活）。
+- **done 不作数，磁盘说了算**：poll 在 result.ok 之后做完成校验——engine 回读 HEAD==钉定 commit；weights 查 DiT manifest + text encoder + 上游 config 三件齐；smoke 读 PNG 做结构校验。任一缺失即改判 `failed`（error_type=verify）。
+- **失败归因**：classifySetupFailure 按日志尾部正则映射到共享错误分类（disk/verify/license/network/memory/engine），零本机绝对路径出现在用户可见文案（displayPath → `~`）。
+- **镜像诚实口径**：`mirror:"hf-mirror"` 只作用于文本编码器下载（`HF_ENDPOINT` 环境变量，hf_hub_download 遵守）；主权重走引擎自带 fetch 脚本，其 URL 硬编码官方站——不改动钉定引擎（D1），README 如实声明镜像不覆盖主权重。
 
 ## 4. Config schema（configEditor 持久化，双 profile 同步纪律）
 
