@@ -1,8 +1,10 @@
 # dsh-h3-image
 
-> **Name reserved.** This package version (0.0.1) is a skeleton: the
-> read-only environment check works; the setup wizard and image generation
-> arrive in the next milestones. Nothing here calls any cloud service.
+> **Name reserved.** This package version (0.1.0) generates images locally:
+> the read-only environment check and text-to-image are live (the community
+> license must be accepted by you, explicitly, before the first image); the
+> one-click setup wizard arrives in the next milestone. Nothing here calls any
+> cloud service.
 
 A [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) (DSH)
 plugin bundle that runs the open-source **MiniMax H3-Image** text-to-image
@@ -15,8 +17,8 @@ per-image fees, no egress during generation.
 | Tool | Purpose |
 | --- | --- |
 | `h3_status` | Read-only health check: platform, unified memory, venv, engine commit, weights, text encoder, free disk — each red item carries a fix hint. |
-| `h3_setup` | One-time wizard: venv → pinned engine clone → license acceptance → weight download (resumable, sha256-verified) → smoke test. *(next milestone)* |
-| `h3_image` | Text-to-image, long-task friendly (submit → poll), output lands in your session workspace. *(next milestone)* |
+| `h3_setup` | Records your explicit community-license acceptance (`action=license`, `accept: true`) and clears it (`action=reset`). The one-time wizard (venv → pinned engine clone → weight download, sha256-verified → smoke test) is the next milestone. |
+| `h3_image` | Text-to-image: one engine subprocess per call, internal deadline, one generation at a time (a second call gets an immediate `busy`), PNG verified before it is reported, output lands in your session workspace. |
 
 ## Requirements
 
