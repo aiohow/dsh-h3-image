@@ -6,6 +6,11 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 
+## [0.2.5] - 2026-11-13
+
+Plain wording pass over the readme and plugin descriptions:
+no internal jargon (pinned/host/ledger/egress/miss).
+
 ## [0.2.4] - 2026-11-13
 
 Requirements: say "Apple Silicon (M1 or later)" instead of

@@ -22,7 +22,7 @@
 
 - Apple Silicon Mac（M1 及以上；Intel Mac 和 Windows/Linux 跑不了，`h3_status` 会直接拦下告诉你，不会跑到一半崩掉）。
 - **建议 48GB 及以上统一内存**；32GB 会先警告、你确认了才继续，低于 32GB 直接拒绝。
-- 安装期留约 60GB 磁盘（从零安装实测峰值；装完引擎会自删源分片，稳态约 53GB——见下面资源占用）。
+- 安装期留约 60GB 磁盘（从零安装实测峰值；装完引擎会自删源分片，之后大约占 53GB——见下面资源占用）。
 - DSH ≥ 0.2.2-rc.1，Node ≥ 22.19。
 
 ### 资源占用（实测，从零安装 2026-11-12/13）
@@ -32,20 +32,20 @@
 | 项目 | 实测 |
 | --- | --- |
 | 磁盘峰值（安装全程最多占） | 58.6 GB：DiT 分片 21.5 + 文本编码器 28.2 + 在途源分片 5.4 + venv 1.1 |
-| 磁盘稳态（装完之后） | 53.2 GB（引擎转换完会自删源分片） |
+| 装完之后的磁盘占用 | 53.2 GB（引擎转换完会自删源分片） |
 | 建 venv | ~18 s（本机有合适的独立 Python 就直接用，没有就如实说没有） |
 | 引擎 clone + pip install | ~72 s |
 | 单个 transformer 分片（下载 5.5 GB + Q8 转换 + 删除） | ~4–5 分钟 |
 | 续传段（7 个分片 + 28.2 GB 文本编码器） | 41 分钟 |
 | 第一次出图 | 30 s（引擎实际耗时 10.8 s；1 MP，6 步） |
 | 生图内存峰值（引擎 metrics） | 27.5 GB / 张 @ 1 MP |
-| 运行期间宿主已用内存 | 274 GB——含常驻推理服务；插件自己占的就是上面那 27.5 GB |
+| 运行期间电脑已用内存 | 274 GB——含常驻推理服务；插件自己占的就是上面那 27.5 GB |
 
-中断的步骤可以接着来：被杀的下载从 `.part` 继续（Range 请求），下完的分片绝不重下——上面那次从零安装的续传过程全程有日志可对账。
+中断的步骤可以接着来：被杀的下载从 `.part` 继续（Range 请求），下完的分片绝不重下——上面那次从零安装的续传过程全程有日志可查。
 
 ### 许可——下载权重前必读
 
-本插件的**代码**是 MIT。插件不打包、不托管、不再分发模型——模型和它的许可条款跟插件无关，插件只是个带许可确认环节的下载器和运行器。安装向导会从 Hugging Face 官方仓库按钉定版本下载权重，下载任何字节之前**先展示两份协议的要点和全文直链**（权重：MiniMax H3 Image 社区许可；量化文本编码器：MiniMax H3 社区许可，各来自自己的上游仓库），并**点名不支持的地区（欧盟、英国、韩国、美国）**；协议原件会随下载存到你的模型目录里。要你自己确认接受，插件绝不代你点。上游引擎是 Apache-2.0。详见 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)。
+本插件的**代码**是 MIT。插件不打包、不托管、不再分发模型——模型和它的许可条款跟插件无关，插件只是个带许可确认环节的下载器和运行器。安装向导会从 Hugging Face 官方仓库按固定版本下载权重，下载任何字节之前**先展示两份协议的要点和全文链接**（权重：MiniMax H3 Image 社区许可；量化文本编码器：MiniMax H3 社区许可，各来自自己的上游仓库），并**点名不支持的地区（欧盟、英国、韩国、美国）**；协议原件会随下载存到你的模型目录里。要你自己确认接受，插件绝不代你点。上游引擎是 Apache-2.0。详见 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)。
 
 ### 安装（DSH）
 
@@ -65,7 +65,7 @@ npm test                                   # 单测（纯检查逻辑）
 npm run release                            # 门禁 + pack + tarball 扫描
 ```
 
-两道发布门禁会在 CI 和 `prepack` 时自动跑：`scripts/check-release-safety.mjs` 扫源码**和**发布包（不含本机路径/用户名、不含 macOS 垃圾文件、不含密钥），`scripts/check-version-consistency.mjs` 核对 package.json、CHANGELOG、locale、钉定版本四处一致。
+两道发布门禁会在 CI 和 `prepack` 时自动跑：`scripts/check-release-safety.mjs` 扫源码**和**发布包（不含本机路径/用户名、不含 macOS 垃圾文件、不含密钥），`scripts/check-version-consistency.mjs` 核对 package.json、CHANGELOG、locale、固定版本四处一致。
 
 ---
 
@@ -81,7 +81,7 @@ The current version ships the full local pipeline: the read-only environment che
 
 | Tool | Purpose |
 | --- | --- |
-| `h3_status` | Read-only health check: platform, unified memory, venv, engine commit, weights, text encoder, free disk — each red item carries a fix hint. |
+| `h3_status` | Read-only health check: platform, unified memory, venv, engine version, weights, text encoder, free disk — each red item carries a fix hint. |
 | `h3_setup` | The one-time setup wizard as a resumable state machine: `check → venv → engine → license → weights → smoke`. Long steps (engine install, ~59 GB of downloads + conversion) run as detached background jobs — submit returns a `job_id` in seconds, `action=poll` reads progress from the engine's own on-disk state, and an interrupted download resumes from `.part` on re-run. A dead job is reported `interrupted`, never "done". `action=license` shows the community license; acceptance is recorded only by you. `action=reset` clears the local state record. |
 | `h3_image` | Text-to-image: one engine subprocess per call, internal deadline, one generation at a time (a second call gets an immediate `busy`), PNG verified before it is reported, output lands in your session workspace. |
 
@@ -89,18 +89,18 @@ The current version ships the full local pipeline: the read-only environment che
 
 - Apple Silicon Mac (M1 or later; Intel Macs and Windows/Linux are not supported — `h3_status` declines them up front instead of crashing halfway).
 - **48 GB+ unified memory recommended**; 32 GB machines are warned-then-confirmed, below 32 GB is refused.
-- ~60 GB free disk during setup (measured peak on a from-zero install; the steady state after the engine deletes source shards is ~53 GB — see the resource ledger below).
+- ~60 GB free disk during setup (measured peak on a from-zero install; the steady state after the engine deletes source shards is ~53 GB — see the resource usage below).
 - DSH ≥ 0.2.2-rc.1, Node ≥ 22.19.
 
 ### Resource usage (measured, from-scratch install 2026-11-12/13)
 
-Every number below comes from one from-zero acceptance run on a 275 GB Apple Silicon machine (no reuse candidates, fresh venv/engine/weights) — not from estimates.
+Every number below comes from a single from-scratch install on a 275 GB Apple Silicon machine (nothing reused, fresh venv/engine/weights) — not estimates.
 
 | Item | Measured |
 | --- | --- |
 | Disk peak (incremental, whole setup) | 58.6 GB (54.6 GiB): DiT pack 21.5 + text encoder 28.2 + one in-flight source shard 5.4 + venv 1.1 |
 | Disk steady state (post-setup) | 53.2 GB (source shards deleted by the engine after conversion) |
-| venv creation | ~18 s (reuses a suitable standalone CPython when found; reports a miss otherwise) |
+| venv creation | ~18 s (reuses a suitable standalone Python when one is found; says so when there is none) |
 | Engine clone + pip install | ~72 s |
 | Weights: per transformer shard (download 5.5 GB + Q8 convert + delete) | ~4–5 min |
 | Weights: resume segment (7 shards + 28.2 GB text encoder) | 41 min |
@@ -108,7 +108,7 @@ Every number below comes from one from-zero acceptance run on a 275 GB Apple Sil
 | Generation peak memory (engine metrics) | 27.5 GB per image at 1 MP |
 | Host memory in use during the run | 274 GB — includes a resident inference server; the plugin's own footprint is the 27.5 GB above |
 
-Interrupted steps resume: a killed download continues from its `.part` (Range requests), and finished shards are never re-fetched — verified by the acceptance run's resume audit (zero re-downloads of completed shards).
+Interrupted steps resume: a killed download continues from its `.part` (Range requests), and finished shards are never re-fetched — verified during the install above: completed shards were never re-downloaded.
 
 ### Licenses — read before downloading weights
 
@@ -133,7 +133,7 @@ npm run release                            # gates + pack + tarball scan
 ```
 
 Two release gates run in CI and on `prepack`:
-`scripts/check-release-safety.mjs` (no machine fingerprints, no AppleDouble,
+`scripts/check-release-safety.mjs` (no local paths or usernames, no macOS junk files,
 no secrets — in source **and** in the built tarball) and
 `scripts/check-version-consistency.mjs` (package.json ↔ CHANGELOG ↔ locales ↔
 pinned revisions).
