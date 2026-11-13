@@ -6,6 +6,23 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 
+## [0.2.10] - 2026-11-13
+
+Staging driver hardening from a real-world mirror outage (a user's download
+ stalled when the mirror began answering every pinned-file request with a
+ redirect back to the origin, and bursty timeouts killed the run after one
+ try per endpoint):
+
+- Two direct rounds before the system-proxy round. Mirror flakiness is
+  bursty; a second direct attempt is free, proxy bytes are not. The failed
+  first round is announced with the error.
+- When a redirect chain lands on a different host than the endpoint asked
+  for (a mirror bouncing to the origin), a `note:` line names the host the
+  bytes actually come from, so a slow transfer is attributed correctly.
+- New regression test: a server that fails the first request per file and
+  then serves normally must recover on the second direct round without any
+  mention of the proxy round.
+
 ## [0.2.9] - 2026-11-13
 
 ### Changed
