@@ -8,7 +8,7 @@
 
 一个 [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness)（DSH）插件包：在**你自己的 Apple Silicon Mac** 上，通过 [MLX](https://github.com/ml-explore/mlx) 引擎运行开源的 **MiniMax H3-Image** 文生图模型，全程完全本地。零 API 密钥、零账号、零按张费用，生图过程零出网。
 
-当前版本（0.2.0）交付完整本地链路：只读环境体检、一键安装向导（venv → 钉定引擎 clone → 许可确认 → sha256 校验的权重下载（支持断点续传）→ 冒烟出图，每个长步骤都是宿主重启不丢的后台任务），以及本地文生图。
+当前版本交付完整本地链路：只读环境体检、一键安装向导（venv → 钉定引擎 clone → 许可确认 → sha256 校验的权重下载（支持断点续传）→ 冒烟出图，每个长步骤都是宿主重启不丢的后台任务），以及本地文生图。
 
 ### 你能得到什么
 
@@ -49,8 +49,11 @@
 
 ### 安装（DSH）
 
+在 DSH 里用 `plugin_manager` 安装，两种来源任选：
+
 ```
-plugin_manager → install_bundle → <本仓库或 npm 包 dsh-h3-image>
+install_bundle → dsh-h3-image            # 从 npm 装最新发布版
+install_bundle → /path/to/dsh-h3-image   # 或本地仓库/解包目录
 ```
 
 然后在 profile 中启用该 bundle，跑一次 `h3_status`——机器还缺什么它会逐项告诉你。
@@ -72,7 +75,7 @@ npm run release                            # 门禁 + pack + tarball 扫描
 
 A [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) (DSH) plugin bundle that runs the open-source **MiniMax H3-Image** text-to-image model **entirely on your own Apple Silicon Mac**, through the [MLX](https://github.com/ml-explore/mlx) engine. No API keys, no accounts, no per-image fees, no egress during generation.
 
-Version 0.2.0 ships the full local pipeline: the read-only environment check, the one-time setup wizard (venv → pinned engine clone → license gate → sha256-verified weight download with resume → smoke test, each long step a background job that survives restarts), and text-to-image.
+The current version ships the full local pipeline: the read-only environment check, the one-time setup wizard (venv → pinned engine clone → license gate → sha256-verified weight download with resume → smoke test, each long step a background job that survives restarts), and text-to-image.
 
 ### What you get
 
@@ -113,8 +116,11 @@ This plugin's **code** is MIT. It does not ship, re-host or re-distribute the mo
 
 ### Install (DSH)
 
+Install with `plugin_manager`, from either source:
+
 ```
-plugin_manager → install_bundle → <this repo or the npm package dsh-h3-image>
+install_bundle → dsh-h3-image            # latest release from npm
+install_bundle → /path/to/dsh-h3-image   # or a local checkout / unpacked dir
 ```
 
 Then enable the bundle in your profile and run `h3_status` — it tells you exactly what the machine still needs.
