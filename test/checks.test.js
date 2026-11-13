@@ -10,6 +10,7 @@ import {
   checkTextEncoder,
   checkDisk,
   normalizeMirror,
+  memoryGB,
   overallOf,
   resolveConfig,
 } from "../lib/checks.js";
@@ -116,9 +117,12 @@ test("overall: all ok is ready", () => {
 });
 
 test("overall: warning-tier checks do not block ready (34GB Air regression)", () => {
-  const mem = checkMemory({ totalGB: 34 });
+  // A "32 GB" Apple machine reports 32 GiB; memoryGB must show 32, matching
+  // the spec sheet, and it must land in the warning tier (floor 32, rec 48).
+  const mem = checkMemory({ totalGB: memoryGB(34359738368) });
   assert.equal(mem.state, "too_low");
   assert.equal(mem.warning, true);
+  assert.ok(mem.detail.startsWith("32 GB"), mem.detail);
   const checks = [
     { id: "platform", state: "ok" },
     mem,
