@@ -6,46 +6,46 @@
 
 > **非官方声明**：本插件是社区独立开发的第三方工具，与 MiniMax 无任何关联、未获其背书；"MiniMax-H3-Image" 仅用于指示所支持的模型。权重依 MiniMax 社区许可协议提供，**授权地域不含欧盟、英国、韩国、美国**——请自行确认你所在司法辖区可合法使用。完整免责与商用提示见 [docs/DISCLAIMER.md](docs/DISCLAIMER.md)。
 
-一个 [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness)（DSH）插件包：在**你自己的 Apple Silicon Mac** 上，通过 [MLX](https://github.com/ml-explore/mlx) 引擎运行开源的 **MiniMax H3-Image** 文生图模型，全程完全本地。零 API 密钥、零账号、零按张费用，生图过程零出网。
+一个 [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness)（DSH）插件：把开源的 **MiniMax H3-Image** 文生图模型跑在**你自己的 Apple Silicon Mac** 上，走 [MLX](https://github.com/ml-explore/mlx) 引擎，全程本地。不用申请 API key，不用注册账号，不按张收费，生图时不联网。
 
-当前版本包含完整的本地流程：只读环境体检、一键安装向导（venv → 钉定引擎 clone → 许可确认 → sha256 校验的权重下载（支持断点续传）→ 首次出图验证，每个长步骤都是宿主重启不丢的后台任务），以及本地文生图。
+用法就三步：先跑 `h3_status` 体检看机器行不行，再让 `h3_setup` 向导把引擎和权重装好（下载前要你自己确认 MiniMax 的许可协议），之后用 `h3_image` 生图。
 
 ### 工具一览
 
-| 工具 | 用途 |
+| 工具 | 干什么用 |
 | --- | --- |
-| `h3_status` | 只读环境体检：平台、统一内存、venv、引擎 commit、权重、文本编码器、可用磁盘——每个红项附修复提示。 |
-| `h3_setup` | 一键安装向导，可续传状态机：`check → venv → engine → license → weights → smoke`。长步骤（引擎安装、约 59 GB 下载+转换）以分离后台任务运行——提交秒级返回 `job_id`，`action=poll` 从引擎自身的磁盘状态读进度，中断的下载重跑时从 `.part` 续传。死掉的任务如实报 `interrupted`，绝不谎报"完成"。`action=license` 展示社区许可，接受记录只能由你本人产生；`action=reset` 清除本地状态记录。 |
-| `h3_image` | 文生图：每次调用一个引擎子进程、内部 deadline、同一时刻只跑一路（第二路立即收到 `busy`）、PNG 结构校验通过才上报，产物落在你的会话工作区。 |
+| `h3_status` | 只读体检：平台、内存、venv、引擎版本、权重、磁盘逐项检查，缺什么标红并告诉你怎么修。 |
+| `h3_setup` | 安装向导：`check → venv → engine → license → weights → smoke` 一步步走，中断了重跑接着来。耗时长的步骤（装引擎、下 59 GB 权重）放后台跑，提交后马上返回 `job_id`，用 `action=poll` 看进度；下到一半断了，重跑从 `.part` 接着下，下完的分片不会重下；任务被杀会如实报 `interrupted`，不谎报"完成"。`action=license` 展示许可协议，只能由你自己确认接受；`action=reset` 清掉本地状态记录。 |
+| `h3_image` | 文生图。同一时间只跑一张，第二张会立刻收到 `busy`；出图前先校验 PNG 结构，确认是完整图才报成功，图片存到你的会话工作区。 |
 
 ### 运行要求
 
-- Apple Silicon Mac（引擎仅支持 arm64；Intel/Windows/Linux 由 `h3_status` 明确拒绝，而不是崩溃）。
-- **建议 48GB 及以上统一内存**；32GB 机型先警告再确认，低于 32GB 拒绝。
-- 安装期约 60GB 可用磁盘（从零安装实测峰值；引擎删除源分片后稳态约 53GB——见下方资源占用）。
+- Apple Silicon Mac（引擎只支持 arm64；Intel/Windows/Linux 会被 `h3_status` 直接拦下，不会跑到一半崩掉）。
+- **建议 48GB 及以上统一内存**；32GB 会先警告、你确认了才继续，低于 32GB 直接拒绝。
+- 安装期留约 60GB 磁盘（从零安装实测峰值；装完引擎会自删源分片，稳态约 53GB——见下面资源占用）。
 - DSH ≥ 0.2.2-rc.1，Node ≥ 22.19。
 
 ### 资源占用（实测，从零安装 2026-11-12/13）
 
-以下每个数字都来自 275GB Apple Silicon 机器上的一次从零验收运行（无复用候选、全新 venv/引擎/权重）——不是估算。
+下面每个数字都是在一台 275GB 内存的机器上从零装一遍实测出来的（没有任何可复用的旧文件），不是估算。
 
 | 项目 | 实测 |
 | --- | --- |
-| 磁盘峰值（增量，全程） | 58.6 GB (54.6 GiB)：DiT pack 21.5 + 文本编码器 28.2 + 在途源分片 5.4 + venv 1.1 |
-| 磁盘稳态（安装完成后） | 53.2 GB（引擎转换后自删源分片） |
-| venv 创建 | ~18 s（找到合适的独立 CPython 即复用，否则如实报 miss） |
+| 磁盘峰值（安装全程最多占） | 58.6 GB：DiT 分片 21.5 + 文本编码器 28.2 + 在途源分片 5.4 + venv 1.1 |
+| 磁盘稳态（装完之后） | 53.2 GB（引擎转换完会自删源分片） |
+| 建 venv | ~18 s（本机有合适的独立 Python 就直接用，没有就如实说没有） |
 | 引擎 clone + pip install | ~72 s |
-| 权重：单个 transformer 分片（下载 5.5 GB + Q8 转换 + 删除） | ~4–5 分钟 |
-| 权重：续传段（7 分片 + 28.2 GB 文本编码器） | 41 分钟 |
-| 首次出图 | 30 s 墙钟 / 10.8 s 引擎时间（1 MP，6 步） |
+| 单个 transformer 分片（下载 5.5 GB + Q8 转换 + 删除） | ~4–5 分钟 |
+| 续传段（7 个分片 + 28.2 GB 文本编码器） | 41 分钟 |
+| 第一次出图 | 30 s（引擎实际耗时 10.8 s；1 MP，6 步） |
 | 生图内存峰值（引擎 metrics） | 27.5 GB / 张 @ 1 MP |
-| 运行期间宿主已用内存 | 274 GB——含常驻推理服务；插件自身占用即上行的 27.5 GB |
+| 运行期间宿主已用内存 | 274 GB——含常驻推理服务；插件自己占的就是上面那 27.5 GB |
 
-中断的步骤可续传：被杀的下载从 `.part` 继续（Range 请求），已完成分片绝不重下——验收运行的续传审计实证（已完成分片零重下）。
+中断的步骤可以接着来：被杀的下载从 `.part` 继续（Range 请求），下完的分片绝不重下——上面那次从零安装的续传过程全程有日志可对账。
 
 ### 许可——下载权重前必读
 
-本插件的**代码**是 MIT，不打包、不托管、不再分发模型——模型与其许可条款与本插件无关，插件只是带许可门的下载器与运行器。安装向导从 Hugging Face 官方仓库按钉定 revision 下载权重，并在拉取任何字节之前**展示两份协议的要点与全文直链**（权重：MiniMax H3 Image 社区许可；量化文本编码器：MiniMax H3 社区许可，均来自各自上游仓库），**点名地域排除（EU/UK/KR/US）**；协议原件随下载落盘在你的模型目录里。由你本人确认接受；插件永不代你接受。上游引擎为 Apache-2.0。详见 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)。
+本插件的**代码**是 MIT。插件不打包、不托管、不再分发模型——模型和它的许可条款跟插件无关，插件只是个带许可确认环节的下载器和运行器。安装向导会从 Hugging Face 官方仓库按钉定版本下载权重，下载任何字节之前**先展示两份协议的要点和全文直链**（权重：MiniMax H3 Image 社区许可；量化文本编码器：MiniMax H3 社区许可，各来自自己的上游仓库），并**点名不支持的地区（欧盟、英国、韩国、美国）**；协议原件会随下载存到你的模型目录里。要你自己确认接受，插件绝不代你点。上游引擎是 Apache-2.0。详见 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)。
 
 ### 安装（DSH）
 
@@ -65,7 +65,7 @@ npm test                                   # 单测（纯检查逻辑）
 npm run release                            # 门禁 + pack + tarball 扫描
 ```
 
-两道发布门禁在 CI 与 `prepack` 运行：`scripts/check-release-safety.mjs`（源码**与**产物 tarball 双扫：零机器指纹、零 AppleDouble、零密钥）与 `scripts/check-version-consistency.mjs`（package.json ↔ CHANGELOG ↔ locale ↔ 钉定 revision 四处一致）。
+两道发布门禁会在 CI 和 `prepack` 时自动跑：`scripts/check-release-safety.mjs` 扫源码**和**发布包（不含本机路径/用户名、不含 macOS 垃圾文件、不含密钥），`scripts/check-version-consistency.mjs` 核对 package.json、CHANGELOG、locale、钉定版本四处一致。
 
 ---
 
