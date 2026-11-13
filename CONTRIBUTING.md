@@ -42,8 +42,9 @@ npm run release       # version-consistency + release-safety gates + pack + tarb
   CHANGELOG, locales and pinned revisions for you (`npm run release` fails
   on drift).
 - Bilingual surfaces: user-visible strings live in `locale/en.json` and
-  `locale/zh.json`; the README has a paired `README.md` / `README.zh.md`.
-  Change one, change the other, in the same PR.
+  `locale/zh.json`; the README carries both languages in one file
+  (`README.md`, Chinese first, English second). Change both halves in the
+  same PR.
 
 ## Reporting issues
 
