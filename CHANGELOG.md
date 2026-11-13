@@ -6,6 +6,12 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 
+## [0.2.7] - 2026-11-13
+
+English readme synced with the Chinese one: same three-step intro,
+Hugging Face/pinned-version sentence in the license section, text encoder
+in the status list.
+
 ## [0.2.6] - 2026-11-13
 
 Resource table trimmed to what users act on, all figures rounded with "~";

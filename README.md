@@ -14,7 +14,7 @@
 
 | 工具 | 干什么用 |
 | --- | --- |
-| `h3_status` | 只读体检：平台、内存、venv、引擎版本、权重、磁盘逐项检查，缺什么标红并告诉你怎么修。 |
+| `h3_status` | 只读体检：平台、内存、venv、引擎版本、权重、文本编码器、磁盘逐项检查，缺什么标红并告诉你怎么修。 |
 | `h3_setup` | 安装向导：`check → venv → engine → license → weights → smoke` 一步步走，中断了重跑接着来。耗时长的步骤（装引擎、下 59 GB 权重）放后台跑，提交后马上返回 `job_id`，用 `action=poll` 看进度；下到一半断了，重跑从 `.part` 接着下，下完的分片不会重下；任务被杀会如实报 `interrupted`，不谎报"完成"。`action=license` 展示许可协议，只能由你自己确认接受；`action=reset` 清掉本地状态记录。 |
 | `h3_image` | 文生图。同一时间只跑一张，第二张会立刻收到 `busy`；出图前先校验 PNG 结构，确认是完整图才报成功，图片存到你的会话工作区。 |
 
@@ -69,9 +69,9 @@ npm run release                            # 门禁 + pack + tarball 扫描
 
 > **Unofficial**: a third-party community tool, not affiliated with or endorsed by MiniMax; "MiniMax-H3-Image" is referenced descriptively only. Weights are provided under the MiniMax Community License, whose authorized territory **excludes the EU, UK, South Korea and the US** — verify you may lawfully use the model in your jurisdiction. Full disclaimer: [docs/DISCLAIMER.md](docs/DISCLAIMER.md).
 
-A [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) (DSH) plugin bundle that runs the open-source **MiniMax H3-Image** text-to-image model **entirely on your own Apple Silicon Mac**, through the [MLX](https://github.com/ml-explore/mlx) engine. No API keys, no accounts, no per-image fees, no egress during generation.
+A [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) (DSH) plugin bundle that runs the open-source **MiniMax H3-Image** text-to-image model **entirely on your own Apple Silicon Mac**, through the [MLX](https://github.com/ml-explore/mlx) engine. No API keys, no accounts, no per-image fees, no network access during generation.
 
-The current version ships the full local pipeline: the read-only environment check, the one-time setup wizard (venv → pinned engine clone → license gate → sha256-verified weight download with resume → smoke test, each long step a background job that survives restarts), and text-to-image.
+Usage is three steps: run `h3_status` to see whether your machine qualifies, let the `h3_setup` wizard install the engine and the weights (you confirm the MiniMax license yourself before anything downloads), then generate images with `h3_image`.
 
 ### Tools
 
@@ -104,7 +104,7 @@ Interrupted steps resume: a killed download continues from its `.part`, and fini
 
 ### Licenses — read before downloading weights
 
-This plugin's **code** is MIT. It does not ship, re-host or re-distribute the model — the model and its license terms have nothing to do with this plugin, which is only a downloader and runner with a license gate. Before any byte is fetched, the setup wizard **shows the key points of both agreements with direct links to their full texts** (weights: MiniMax H3 Image Community License; quantized text encoder: MiniMax H3 Community License, each from its own upstream repo) and **names the territorial exclusions (EU/UK/KR/US)**; the original agreement files land on your disk inside the model directory. You accept them yourself; the plugin never accepts on your behalf. The upstream engine is Apache-2.0. See [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
+This plugin's **code** is MIT. It does not ship, re-host or re-distribute the model — the model and its license terms have nothing to do with this plugin, which is only a downloader and runner with a license gate. The setup wizard downloads the weights from the official Hugging Face repositories at pinned versions, and before any byte is fetched it **shows the key points of both agreements with direct links to their full texts** (weights: MiniMax H3 Image Community License; quantized text encoder: MiniMax H3 Community License, each from its own upstream repo) and **names the territorial exclusions (EU/UK/KR/US)**; the original agreement files land on your disk inside the model directory. You accept them yourself; the plugin never accepts on your behalf. The upstream engine is Apache-2.0. See [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
 
 ### Install (DSH)
 
