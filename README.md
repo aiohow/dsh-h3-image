@@ -20,7 +20,7 @@
 
 ### 运行要求
 
-- Apple Silicon Mac（引擎只支持 arm64；Intel/Windows/Linux 会被 `h3_status` 直接拦下，不会跑到一半崩掉）。
+- Apple Silicon Mac（M1 及以上；Intel Mac 和 Windows/Linux 跑不了，`h3_status` 会直接拦下告诉你，不会跑到一半崩掉）。
 - **建议 48GB 及以上统一内存**；32GB 会先警告、你确认了才继续，低于 32GB 直接拒绝。
 - 安装期留约 60GB 磁盘（从零安装实测峰值；装完引擎会自删源分片，稳态约 53GB——见下面资源占用）。
 - DSH ≥ 0.2.2-rc.1，Node ≥ 22.19。
@@ -87,7 +87,7 @@ The current version ships the full local pipeline: the read-only environment che
 
 ### Requirements
 
-- Apple Silicon Mac (the engine is arm64-only; Intel/Windows/Linux are declined by `h3_status`, not by a crash).
+- Apple Silicon Mac (M1 or later; Intel Macs and Windows/Linux are not supported — `h3_status` declines them up front instead of crashing halfway).
 - **48 GB+ unified memory recommended**; 32 GB machines are warned-then-confirmed, below 32 GB is refused.
 - ~60 GB free disk during setup (measured peak on a from-zero install; the steady state after the engine deletes source shards is ~53 GB — see the resource ledger below).
 - DSH ≥ 0.2.2-rc.1, Node ≥ 22.19.
