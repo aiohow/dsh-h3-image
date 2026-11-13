@@ -1,7 +1,7 @@
 {
   "name": "dsh-h3-image",
   "version": "0.2.8",
-  "description": "\u5728 Apple Silicon \u4e0a\u7528\u5f00\u6e90 MiniMax H3-Image\uff08MLX \u5f15\u64ce\uff09\u505a\u5b8c\u5168\u672c\u5730\u6587\u751f\u56fe\u7684 DeepSeek Harness \u63d2\u4ef6\uff1a\u4e00\u952e\u5b89\u88c5\u5411\u5bfc + \u96f6\u51fa\u7f51\u672c\u5730\u751f\u56fe\u3002Fully local MiniMax H3-Image text-to-image on Apple Silicon MLX \u2014 a DeepSeek Harness plugin with a one-time setup wizard and zero-egress generation.",
+  "description": "在 Apple Silicon 上用开源 MiniMax H3-Image（MLX 引擎）做完全本地文生图的 DeepSeek Harness 插件：一键安装向导 + 零出网本地生图。Fully local MiniMax H3-Image text-to-image on Apple Silicon MLX — a DeepSeek Harness plugin with a one-time setup wizard and no network access at generation.",
   "type": "module",
   "main": "./lib/index.js",
   "scripts": {
