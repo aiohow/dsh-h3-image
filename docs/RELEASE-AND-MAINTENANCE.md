@@ -61,4 +61,5 @@
 6. **发布**：tarball scp 到美国vps `/root/npm-publish/` → `NODE_OPTIONS=--dns-result-order=ipv4first npm publish <tgz> --userconfig /root/npm-publish/.npmrc` → 删上一版 tarball（留底 0.2.0 + 当前版）。
 7. **轮询 + 装机 e2e**：官方 registry 每 20s 轮（tarball=200 且 latest=新版本，历史 ~5 分钟）；生效后 VPS 干净目录实装，判据 = installed 版本号 + 文件数 + locale 标题 grep 实测读出。
 8. **镜像**：`PUT https://registry.npmmirror.com/dsh-h3-image/sync` 踢同步；轮询镜像 latest 追平后，镜像包与官方包 `shasum` 互证一致才算国内面闭环。
-9. **台账**：`box-probe/CHANGES-<日期>.md` 追加 CH 条目（发布链各步证据、镜像状态、用户侧待办）。
+9. **GitHub Release**：`gh release create vX.Y.Z <tgz> SHA256SUMS --title "vX.Y.Z — <一句话>" --notes-file <草稿>`——正文从 CHANGELOG 对应节摘录改写（面向用户，不是给维护者的全量）；普通 PATCH 版可 `--notes-file` 用 CHANGELOG 节原文。**正文发出前先给用户过目**（用户 2026-11-13 指令）。历史 tag 不补 Release 页，只补用户点名的里程碑。
+10. **台账**：`box-probe/CHANGES-<日期>.md` 追加 CH 条目（发布链各步证据、镜像状态、用户侧待办）。
