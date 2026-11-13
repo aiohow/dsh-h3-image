@@ -143,6 +143,13 @@ test("licenseGate: matching record passes; foreign agreement name does not", () 
   assert.notEqual(licenseGate({ license: { accepted: true, agreement: "MIT" } }), null);
 });
 
+test("licenseGate: a legacy record naming only the image agreement must re-accept", () => {
+  const legacy = { license: { accepted: true, agreement: WEIGHTS.license, at: "2026-11-13T00:00:00.000Z" } };
+  const r = licenseGate(legacy);
+  assert.notEqual(r, null);
+  assert.equal(r.error_type, "license");
+});
+
 test("state: corrupt file reads as empty; write is tmp+rename", async () => {
   const dir = await mkdtemp(join(tmpdir(), "h3-state-"));
   const path = statePath(dir);

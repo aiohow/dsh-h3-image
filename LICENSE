@@ -22,6 +22,9 @@ SOFTWARE.
 
 NOTE: This license covers the plugin source code only. The MiniMax H3-Image
 model weights are distributed separately by MiniMax under the MiniMax H3
-Image Community License Agreement (shown inside the setup wizard before any
-download), and the upstream MLX engine is Apache-2.0. See
+Image Community License Agreement, and the quantized text encoder under the
+MiniMax H3 Community License Agreement; the setup wizard shows the key
+points of both (including territorial exclusions) with direct links to the
+full texts before any download, and the original agreement files land on
+your disk with the downloads. The upstream MLX engine is Apache-2.0. See
 THIRD_PARTY_NOTICES.md.

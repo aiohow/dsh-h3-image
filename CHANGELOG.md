@@ -6,6 +6,15 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 
+## [0.2.1] - 2026-11-13
+
+License gate now covers both upstream agreements: the quantized text
+encoder carries its own MiniMax H3 Community License, so the wizard lists
+both agreements with direct links to their full texts and names the
+territorial exclusions (EU/UK/KR/US). Acceptance records both agreement
+names; a record naming only one must be re-confirmed. Docs and notices
+corrected accordingly.
+
 ## [0.2.0] - 2026-11-13
 
 Setup wizard, accepted via a from-zero bare-metal run.

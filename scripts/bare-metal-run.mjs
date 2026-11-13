@@ -31,13 +31,20 @@ import { runSetup } from "../lib/setup.js";
 import { acceptLicense, readState, statePath, writeState } from "../lib/state.js";
 import { ENGINE } from "../lib/pinned.js";
 
-const ROOT = "/Users/agent/deepseek/h3-bare-metal";
+// All paths come from the environment so this driver carries no machine
+// fingerprints: H3_BARE_ROOT (required) and H3_BARE_PYTHON (optional; when
+// unset the venv step discovers an interpreter on its own).
+const ROOT = process.env.H3_BARE_ROOT ?? "";
+if (!ROOT) {
+  console.error("H3_BARE_ROOT is required (scratch dir for the bare-metal run)");
+  process.exit(2);
+}
 const CONFIG = {
   model_dir: join(ROOT, "bare-models"),
   engine_dir: join(ROOT, "bare-engine"),
   venv_dir: join(ROOT, "bare-venv"),
   scan_dirs: [], // true bare-metal: reuse probe must MISS
-  python_bin: "/Users/agent/ComfyUI-Installs/ComfyUI (1)/standalone-env/bin/python3.13",
+  ...(process.env.H3_BARE_PYTHON ? { python_bin: process.env.H3_BARE_PYTHON } : {}),
 };
 const resolved = resolveConfig(CONFIG);
 const REPORT = join(ROOT, "bare-report.json");
@@ -52,7 +59,7 @@ const say = (m) => {
 // --- fingerprint gate on every plugin envelope ------------------------------
 function checkFingerprint(where, value) {
   const text = JSON.stringify(value);
-  if (text.includes("/Users/agent") || text.includes("/Users/")) {
+  if (text.includes("/Users/") || text.includes("/home/")) {
     report.notes.push(`FINGERPRINT LEAK at ${where}: ${text.slice(0, 200)}`);
     save();
     throw new Error(`fingerprint leak at ${where}`);

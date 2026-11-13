@@ -97,11 +97,15 @@ function scanText(where, text) {
 }
 
 function walk(dir, out) {
+  return walkWith(dir, out, SKIP_DIRS);
+}
+
+function walkWith(dir, out, skipDirs) {
   for (const ent of readdirSync(dir, { withFileTypes: true })) {
     const p = join(dir, ent.name);
     if (ent.isDirectory()) {
-      if (SKIP_DIRS.has(ent.name)) continue;
-      walk(p, out);
+      if (skipDirs.has(ent.name)) continue;
+      walkWith(p, out, skipDirs);
     } else {
       out.push(p);
     }
@@ -110,10 +114,14 @@ function walk(dir, out) {
 }
 
 function scanSource() {
-  const files = walk(ROOT, []).filter((f) => {
+  // --all-files: scan every tracked text file (the GitHub public surface),
+  // not just what npm ships. Run this before making the repository public.
+  const allFiles = process.argv.includes("--all-files");
+  const skip = allFiles ? new Set(["node_modules", ".git"]) : SKIP_DIRS;
+  const files = walkWith(ROOT, [], skip).filter((f) => {
     const rel = relative(ROOT, f).replaceAll(sep, "/");
     if (rel === SELF) return false;
-    if (SKIP_SOURCE_RE.test(rel)) return false;
+    if (!allFiles && SKIP_SOURCE_RE.test(rel)) return false;
     return TEXT_EXT.has(rel.slice(rel.lastIndexOf(".")));
   });
   for (const f of files) {

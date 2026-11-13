@@ -45,7 +45,7 @@
 
 ### 许可——下载权重前必读
 
-本插件的**代码**是 MIT，不打包、不托管、不再分发模型。安装向导从 Hugging Face 官方仓库按钉定 revision 下载权重，并在拉取任何字节之前**向你展示 MiniMax H3 Image 社区许可协议全文（含地域限制条款）。由你本人确认接受；插件永不代你接受。**上游引擎为 Apache-2.0。详见 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)。
+本插件的**代码**是 MIT，不打包、不托管、不再分发模型——模型与其许可条款与本插件无关，插件只是带许可门的下载器与运行器。安装向导从 Hugging Face 官方仓库按钉定 revision 下载权重，并在拉取任何字节之前**展示两份协议的要点与全文直链**（权重：MiniMax H3 Image 社区许可；量化文本编码器：MiniMax H3 社区许可，均来自各自上游仓库），**点名地域排除（EU/UK/KR/US）**；协议原件随下载落盘在你的模型目录里。由你本人确认接受；插件永不代你接受。上游引擎为 Apache-2.0。详见 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)。
 
 ### 安装（DSH）
 
@@ -109,7 +109,7 @@ Interrupted steps resume: a killed download continues from its `.part` (Range re
 
 ### Licenses — read before downloading weights
 
-This plugin's **code** is MIT. It does not ship, re-host or re-distribute the model. The setup wizard downloads the weights from the official Hugging Face repository at a pinned revision, and **shows you the MiniMax H3 Image Community License Agreement — including its territorial exclusions — before any byte is fetched. You accept it yourself; the plugin never accepts on your behalf.** The upstream engine is Apache-2.0. See [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
+This plugin's **code** is MIT. It does not ship, re-host or re-distribute the model — the model and its license terms have nothing to do with this plugin, which is only a downloader and runner with a license gate. Before any byte is fetched, the setup wizard **shows the key points of both agreements with direct links to their full texts** (weights: MiniMax H3 Image Community License; quantized text encoder: MiniMax H3 Community License, each from its own upstream repo) and **names the territorial exclusions (EU/UK/KR/US)**; the original agreement files land on your disk inside the model directory. You accept them yourself; the plugin never accepts on your behalf. The upstream engine is Apache-2.0. See [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
 
 ### Install (DSH)
 
