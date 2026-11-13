@@ -8,9 +8,9 @@
 
 一个 [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness)（DSH）插件包：在**你自己的 Apple Silicon Mac** 上，通过 [MLX](https://github.com/ml-explore/mlx) 引擎运行开源的 **MiniMax H3-Image** 文生图模型，全程完全本地。零 API 密钥、零账号、零按张费用，生图过程零出网。
 
-当前版本交付完整本地链路：只读环境体检、一键安装向导（venv → 钉定引擎 clone → 许可确认 → sha256 校验的权重下载（支持断点续传）→ 冒烟出图，每个长步骤都是宿主重启不丢的后台任务），以及本地文生图。
+当前版本包含完整的本地流程：只读环境体检、一键安装向导（venv → 钉定引擎 clone → 许可确认 → sha256 校验的权重下载（支持断点续传）→ 首次出图验证，每个长步骤都是宿主重启不丢的后台任务），以及本地文生图。
 
-### 你能得到什么
+### 工具一览
 
 | 工具 | 用途 |
 | --- | --- |
@@ -22,10 +22,10 @@
 
 - Apple Silicon Mac（引擎仅支持 arm64；Intel/Windows/Linux 由 `h3_status` 明确拒绝，而不是崩溃）。
 - **建议 48GB 及以上统一内存**；32GB 机型先警告再确认，低于 32GB 拒绝。
-- 安装期约 60GB 可用磁盘（从零安装实测峰值；引擎删除源分片后稳态约 53GB——见下方资源账）。
+- 安装期约 60GB 可用磁盘（从零安装实测峰值；引擎删除源分片后稳态约 53GB——见下方资源占用）。
 - DSH ≥ 0.2.2-rc.1，Node ≥ 22.19。
 
-### 资源账（实测，裸机验收 2026-11-12/13）
+### 资源占用（实测，从零安装 2026-11-12/13）
 
 以下每个数字都来自 275GB Apple Silicon 机器上的一次从零验收运行（无复用候选、全新 venv/引擎/权重）——不是估算。
 
@@ -37,7 +37,7 @@
 | 引擎 clone + pip install | ~72 s |
 | 权重：单个 transformer 分片（下载 5.5 GB + Q8 转换 + 删除） | ~4–5 分钟 |
 | 权重：续传段（7 分片 + 28.2 GB 文本编码器） | 41 分钟 |
-| 冒烟出图 | 30 s 墙钟 / 10.8 s 引擎时间（1 MP，6 步） |
+| 首次出图 | 30 s 墙钟 / 10.8 s 引擎时间（1 MP，6 步） |
 | 生图内存峰值（引擎 metrics） | 27.5 GB / 张 @ 1 MP |
 | 运行期间宿主已用内存 | 274 GB——含常驻推理服务；插件自身占用即上行的 27.5 GB |
 
@@ -77,7 +77,7 @@ A [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) (DSH) plug
 
 The current version ships the full local pipeline: the read-only environment check, the one-time setup wizard (venv → pinned engine clone → license gate → sha256-verified weight download with resume → smoke test, each long step a background job that survives restarts), and text-to-image.
 
-### What you get
+### Tools
 
 | Tool | Purpose |
 | --- | --- |
@@ -92,7 +92,7 @@ The current version ships the full local pipeline: the read-only environment che
 - ~60 GB free disk during setup (measured peak on a from-zero install; the steady state after the engine deletes source shards is ~53 GB — see the resource ledger below).
 - DSH ≥ 0.2.2-rc.1, Node ≥ 22.19.
 
-### Resource ledger (measured, bare-metal acceptance 2026-11-12/13)
+### Resource usage (measured, from-scratch install 2026-11-12/13)
 
 Every number below comes from one from-zero acceptance run on a 275 GB Apple Silicon machine (no reuse candidates, fresh venv/engine/weights) — not from estimates.
 
