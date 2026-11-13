@@ -15,6 +15,7 @@ import {
   planWeights,
   pollSetup,
 } from "../lib/setup.js";
+import { normalizeMirror } from "../lib/checks.js";
 import { ENGINE } from "../lib/pinned.js";
 
 // ---------------------------------------------------------------------------
@@ -120,13 +121,32 @@ test("buildWeightsCommands: engine fetch pinned flags + TE driver full pin set",
   assert.equal(te.argv[metaIdx + 1], "0919fb684102ef115126612f3fbb84d1027e7317"); // upstream meta pin
   const shaIdx = te.argv.indexOf("--sha256");
   assert.match(te.argv[shaIdx + 1], /^[0-9a-f]{64}$/);
-  assert.equal(te.env, undefined); // hf default: no env override at all
+  assert.equal(fetch.env, undefined); // hf default: no env override at all
+  assert.equal(te.env, undefined);
 });
 
-test("buildWeightsCommands: hf-mirror only touches the TE command env", () => {
+test("buildWeightsCommands: legacy hf-mirror literal stages weights + points TE at the URL", () => {
   const cmds = buildWeightsCommands({ resolved, venvBin: "/v", mirror: "hf-mirror" });
-  assert.equal(cmds[0].env, undefined);
-  assert.equal(cmds[1].env.HF_ENDPOINT, "https://hf-mirror.com");
+  assert.equal(cmds.length, 3);
+  const [stage, fetch, te] = cmds;
+  assert.equal(stage.label, "stage");
+  assert.equal(stage.env, undefined);
+  assert.match(stage.argv[1], /assets[/\\]stage_weights\.py$/);
+  assert.ok(stage.argv.includes("/m/models")); // --dir
+  assert.ok(stage.argv.includes("/m/engine/scripts/fetch_h3_image.py")); // --engine-script
+  const epIdx = stage.argv.indexOf("--endpoints");
+  assert.equal(stage.argv[epIdx + 1], "https://hf-mirror.com,hf"); // mirror first, hf fallback
+  assert.equal(fetch.label, "weights-fetch");
+  assert.equal(fetch.env, undefined);
+  assert.equal(te.env.HF_ENDPOINT, "https://hf-mirror.com");
+});
+
+test("buildWeightsCommands: custom https mirror URL is used for stage endpoints and TE env", () => {
+  const cmds = buildWeightsCommands({ resolved, venvBin: "/v", mirror: "https://mirror.example/files" });
+  assert.equal(cmds.length, 3);
+  const epIdx = cmds[0].argv.indexOf("--endpoints");
+  assert.equal(cmds[0].argv[epIdx + 1], "https://mirror.example/files,hf");
+  assert.equal(cmds[2].env.HF_ENDPOINT, "https://mirror.example/files");
 });
 
 test("buildSmokeCommands: 1MP seed 7 no-canvas into the job area", () => {

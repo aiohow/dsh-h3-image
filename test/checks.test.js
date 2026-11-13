@@ -9,7 +9,9 @@ import {
   checkWeights,
   checkTextEncoder,
   checkDisk,
+  normalizeMirror,
   overallOf,
+  resolveConfig,
 } from "../lib/checks.js";
 
 test("platform: refuses non-darwin", () => {
@@ -111,4 +113,20 @@ test("overall: any non-ok is setup_required", () => {
 
 test("overall: all ok is ready", () => {
   assert.equal(overallOf([{ id: "a", state: "ok" }]), "ready");
+});
+
+test("normalizeMirror: hf / legacy hf-mirror / custom https URL / invalid → hf", () => {
+  assert.equal(normalizeMirror("hf"), "hf");
+  assert.equal(normalizeMirror(undefined), "hf");
+  assert.equal(normalizeMirror("hf-mirror"), "https://hf-mirror.com");
+  assert.equal(normalizeMirror("https://mirror.example"), "https://mirror.example");
+  assert.equal(normalizeMirror("http://insecure.example"), "hf"); // http is not accepted
+  assert.equal(normalizeMirror("nonsense"), "hf");
+  assert.equal(normalizeMirror(42), "hf");
+});
+
+test("resolveConfig carries the normalized mirror", () => {
+  assert.equal(resolveConfig({ model_dir: "/tmp/m" }).mirror, "hf");
+  assert.equal(resolveConfig({ model_dir: "/tmp/m", mirror: "hf-mirror" }).mirror, "https://hf-mirror.com");
+  assert.equal(resolveConfig({ model_dir: "/tmp/m", mirror: "https://my.mirror/v1" }).mirror, "https://my.mirror/v1");
 });

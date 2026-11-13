@@ -140,6 +140,17 @@ test("parseProgress reads the engine fetch + TE driver contract", () => {
   assert.equal(done.te_ok, true);
 });
 
+test("parseProgress counts staging lines only when a mirror run staged files", () => {
+  const plain = parseProgress("== weights-fetch ==\n[1/12] fetching x\n");
+  assert.equal(plain.stage_done, undefined);
+  assert.equal(plain.stage_total, undefined);
+  const staged = parseProgress(
+    "== stage ==\n[stage 1/20] skipped LICENSE (already present)\n[stage 2/20] placed model_index.json\n[stage 20/20] placed model-00012-of-00012.safetensors\nSTAGE OK\n== weights-fetch ==\n",
+  );
+  assert.equal(staged.stage_done, 20);
+  assert.equal(staged.stage_total, 20);
+});
+
 test("pidAlive: our own pid true, absurd pid false", () => {
   assert.equal(pidAlive(process.pid), true);
   assert.equal(pidAlive(999_999), false);

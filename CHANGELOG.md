@@ -6,6 +6,17 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 
+## [0.2.8] - 2026-11-13
+
+### Added
+- Weight downloads now adapt to your network. When `mirror` is set to a custom
+  endpoint, a staging step places the pinned main weights from that endpoint
+  (falling back to huggingface.co) before the engine fetch runs, and the
+  text encoder uses the same endpoint. Downloads go direct without touching
+  your system proxy; the proxy is only used as a last resort, announced in
+  the log. Resumable per file, verified by the engine's own pinned hashes.
+- `mirror` now accepts any `https://` URL, not just the two known names.
+
 ## [0.2.7] - 2026-11-13
 
 English readme synced with the Chinese one: same three-step intro,
