@@ -21,7 +21,7 @@
 ### 运行要求
 
 - Apple Silicon Mac（M1 及以上；Intel Mac 和 Windows/Linux 跑不了，`h3_status` 会直接拦下告诉你，不会跑到一半崩掉）。
-- **建议 48GB 及以上统一内存**；32GB 会先警告、你确认了才继续，低于 32GB 直接拒绝。
+- **建议 48GB 及以上统一内存**；32GB 会先警告、你确认了才继续，低于 32GB 直接拒绝。32GB 属极限配置：无主动散热的机型（如 MacBook Air）跑图会明显降频、耗时变长，连续出图建议间歇休息。
 - 安装期留约 60GB 磁盘（从零安装实测峰值；装完引擎会自删源分片，之后大约占 53GB——见下面资源占用）。
 - DSH ≥ 0.2.2-rc.1，Node ≥ 22.19。
 
@@ -88,7 +88,7 @@ Usage is three steps: run `h3_status` to see whether your machine qualifies, let
 ### Requirements
 
 - Apple Silicon Mac (M1 or later; Intel Macs and Windows/Linux are not supported — `h3_status` declines them up front instead of crashing halfway).
-- **48 GB+ unified memory recommended**; 32 GB machines are warned-then-confirmed, below 32 GB is refused.
+- **48 GB+ unified memory recommended**; 32 GB machines are warned-then-confirmed, below 32 GB is refused. 32 GB is a stretch config: fanless machines (e.g. MacBook Air) will throttle and take noticeably longer; leave gaps between long generation runs.
 - ~60 GB free disk during setup (measured peak on a from-zero install; the steady state after the engine deletes source shards is ~53 GB — see the resource usage below).
 - DSH ≥ 0.2.2-rc.1, Node ≥ 22.19.
 
