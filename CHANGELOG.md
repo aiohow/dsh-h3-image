@@ -6,6 +6,20 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 
+## [0.2.12] - 2026-11-13
+
+Gate fix found on a 34 GB MacBook Air: a warning-tier check (memory between
+the hard floor and the recommendation) kept `h3_status` at `setup_required`
+forever, and `h3_image` refuses anything but `ready` — so generation was
+locked out on a workable machine even after every step had passed.
+`overallOf` now treats `warning: true` checks as caveats: the line still
+shows its detail, but it no longer blocks the overall verdict. Real
+blockers and refused platforms are unaffected; the wizard's explicit
+`confirm_risk` gate for below-recommended memory is untouched.
+
+- Two regression tests: warning-only reads ready; a real blocker alongside
+  a warning still reads setup_required.
+
 ## [0.2.11] - 2026-11-13
 
 Large files (64 MB and up) now download in 4 concurrent byte-range segments,
