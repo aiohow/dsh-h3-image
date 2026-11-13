@@ -6,6 +6,11 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 
+## [0.2.14] - 2026-11-13
+
+README: 32 GB is now called what it is — a stretch config. Fanless machines
+(MacBook Air class) throttle under sustained generation and take longer.
+
 ## [0.2.13] - 2026-11-13
 
 Memory is now reported in the unit the box uses. A machine sold as 32 GB
