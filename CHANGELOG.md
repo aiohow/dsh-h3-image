@@ -6,6 +6,12 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 
+## [0.2.6] - 2026-11-13
+
+Resource table trimmed to what users act on, all figures rounded with "~";
+setup-time numbers marked as reference only (measured on an M5 Ultra 256 GB).
+Dev section rewritten in a plainer voice.
+
 ## [0.2.5] - 2026-11-13
 
 Plain wording pass over the readme and plugin descriptions:

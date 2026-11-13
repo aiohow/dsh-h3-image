@@ -25,23 +25,19 @@
 - 安装期留约 60GB 磁盘（从零安装实测峰值；装完引擎会自删源分片，之后大约占 53GB——见下面资源占用）。
 - DSH ≥ 0.2.2-rc.1，Node ≥ 22.19。
 
-### 资源占用（实测，从零安装 2026-11-12/13）
+### 资源占用（实测）
 
-下面每个数字都是在一台 275GB 内存的机器上从零装一遍实测出来的（没有任何可复用的旧文件），不是估算。
+数据由 M5 Ultra 256G 设备从零开始安装实测，所需时间因机器及网络情况而不同，仅做参考。
 
 | 项目 | 实测 |
 | --- | --- |
-| 磁盘峰值（安装全程最多占） | 58.6 GB：DiT 分片 21.5 + 文本编码器 28.2 + 在途源分片 5.4 + venv 1.1 |
-| 装完之后的磁盘占用 | 53.2 GB（引擎转换完会自删源分片） |
-| 建 venv | ~18 s（本机有合适的独立 Python 就直接用，没有就如实说没有） |
-| 引擎 clone + pip install | ~72 s |
-| 单个 transformer 分片（下载 5.5 GB + Q8 转换 + 删除） | ~4–5 分钟 |
-| 续传段（7 个分片 + 28.2 GB 文本编码器） | 41 分钟 |
-| 第一次出图 | 30 s（引擎实际耗时 10.8 s；1 MP，6 步） |
-| 生图内存峰值（引擎 metrics） | 27.5 GB / 张 @ 1 MP |
-| 运行期间电脑已用内存 | 274 GB——含常驻推理服务；插件自己占的就是上面那 27.5 GB |
+| 安装期间磁盘 | 峰值约 60 GB |
+| 装完后磁盘 | 约 53 GB（源分片转换完会自动删掉） |
+| 单张图内存（1 MP） | 约 27.5 GB |
+| 每个权重分片（下载 + 转换） | 约 4–5 分钟，看你的网速 |
+| 第一次出图 | 约 30 秒 |
 
-中断的步骤可以接着来：被杀的下载从 `.part` 继续（Range 请求），下完的分片绝不重下——上面那次从零安装的续传过程全程有日志可查。
+中断的步骤可以接着来：下到一半断了从 `.part` 继续，下完的分片不会重下。内存那行是引擎自己报的单张图占用。
 
 ### 许可——下载权重前必读
 
@@ -65,7 +61,7 @@ npm test                                   # 单测（纯检查逻辑）
 npm run release                            # 门禁 + pack + tarball 扫描
 ```
 
-两道发布门禁会在 CI 和 `prepack` 时自动跑：`scripts/check-release-safety.mjs` 扫源码**和**发布包（不含本机路径/用户名、不含 macOS 垃圾文件、不含密钥），`scripts/check-version-consistency.mjs` 核对 package.json、CHANGELOG、locale、固定版本四处一致。
+两个发布检查在 CI 和 `prepack` 里自动跑，你不用记着手动跑：`check-release-safety` 保证源码和发出去的包里不含本机路径、用户名、macOS 垃圾文件和密钥；`check-version-consistency` 保证 package.json、CHANGELOG、两个 locale 里的版本号一致，`lib/pinned.js` 里钉的版本号格式合法。
 
 ---
 
@@ -92,23 +88,19 @@ The current version ships the full local pipeline: the read-only environment che
 - ~60 GB free disk during setup (measured peak on a from-zero install; the steady state after the engine deletes source shards is ~53 GB — see the resource usage below).
 - DSH ≥ 0.2.2-rc.1, Node ≥ 22.19.
 
-### Resource usage (measured, from-scratch install 2026-11-12/13)
+### Resource usage (measured)
 
-Every number below comes from a single from-scratch install on a 275 GB Apple Silicon machine (nothing reused, fresh venv/engine/weights) — not estimates.
+Measured on an M5 Ultra with 256 GB of unified memory, from a from-scratch install. Times vary with your machine and your network, so treat them as a reference.
 
 | Item | Measured |
 | --- | --- |
-| Disk peak (incremental, whole setup) | 58.6 GB (54.6 GiB): DiT pack 21.5 + text encoder 28.2 + one in-flight source shard 5.4 + venv 1.1 |
-| Disk steady state (post-setup) | 53.2 GB (source shards deleted by the engine after conversion) |
-| venv creation | ~18 s (reuses a suitable standalone Python when one is found; says so when there is none) |
-| Engine clone + pip install | ~72 s |
-| Weights: per transformer shard (download 5.5 GB + Q8 convert + delete) | ~4–5 min |
-| Weights: resume segment (7 shards + 28.2 GB text encoder) | 41 min |
-| Smoke generation | 30 s wall / 10.8 s engine time (1 MP, 6 steps) |
-| Generation peak memory (engine metrics) | 27.5 GB per image at 1 MP |
-| Host memory in use during the run | 274 GB — includes a resident inference server; the plugin's own footprint is the 27.5 GB above |
+| Disk during setup | ~60 GB at peak |
+| Disk after setup | ~53 GB (source shards are deleted once converted) |
+| Memory per image (1 MP) | ~27.5 GB |
+| Per weight shard (download + convert) | ~4–5 min, depends on your connection |
+| First image | ~30 s |
 
-Interrupted steps resume: a killed download continues from its `.part` (Range requests), and finished shards are never re-fetched — verified during the install above: completed shards were never re-downloaded.
+Interrupted steps resume: a killed download continues from its `.part`, and finished shards are never re-downloaded. The memory figure is the per-image footprint the engine reports itself.
 
 ### Licenses — read before downloading weights
 
@@ -132,8 +124,8 @@ npm test                                   # unit tests (pure check logic)
 npm run release                            # gates + pack + tarball scan
 ```
 
-Two release gates run in CI and on `prepack`:
-`scripts/check-release-safety.mjs` (no local paths or usernames, no macOS junk files,
-no secrets — in source **and** in the built tarball) and
-`scripts/check-version-consistency.mjs` (package.json ↔ CHANGELOG ↔ locales ↔
-pinned revisions).
+The two release checks also run in CI and on `prepack`, so you don't have to remember
+them: `check-release-safety` makes sure the source and the published package are free of
+local paths, usernames, macOS junk files and secrets; `check-version-consistency` checks
+that the version in package.json, CHANGELOG and both locale files agree, and that the
+pinned revisions in `lib/pinned.js` are well-formed.
