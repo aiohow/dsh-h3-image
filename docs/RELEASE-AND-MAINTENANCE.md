@@ -50,3 +50,15 @@
 - [ ] 效果图铭牌与"本机生成"声明齐；截图零路径零用户名
 - [ ] issue 模板 + SECURITY.md + 反馈渠道可用
 - [ ] CHANGELOG v1.0.0 定稿；tag 与 release 实测可下载、哈希对账
+
+## 5. 标准发布链（每次发版逐条执行，纯文案版不豁免）
+
+1. **bump**：`package.json` version + 两个 locale `meta.description` 里的版本串 + CHANGELOG 条目（平实措辞；README 是否动按用户当次拍板）。
+2. **三门禁**：`check-version-consistency` / `check-release-safety --all-files` / `npm test`，全绿才许提交。
+3. **commit + push**：英文 Conventional 短句（发布提交用 `chore(release): x.y.z`），推 `origin main`。
+4. **tag（链内步骤，不是收尾动作）**：`git tag vX.Y.Z`——打之前先核验落点提交的 `package.json` version 等于发布版本；`git push origin vX.Y.Z`。（教训：0.2.8 发布漏打 tag 事后补，0.2.9 又漏一次被用户抓出——凡"发版即打 tag"未固化成编号步骤就会漏。）
+5. **pack**：`npm pack --cache <工作区临时缓存>`；`tar tzf | wc -l` 核对文件数与预期一致，抽看包内中文无转义。
+6. **发布**：tarball scp 到美国vps `/root/npm-publish/` → `NODE_OPTIONS=--dns-result-order=ipv4first npm publish <tgz> --userconfig /root/npm-publish/.npmrc` → 删上一版 tarball（留底 0.2.0 + 当前版）。
+7. **轮询 + 装机 e2e**：官方 registry 每 20s 轮（tarball=200 且 latest=新版本，历史 ~5 分钟）；生效后 VPS 干净目录实装，判据 = installed 版本号 + 文件数 + locale 标题 grep 实测读出。
+8. **镜像**：`PUT https://registry.npmmirror.com/dsh-h3-image/sync` 踢同步；轮询镜像 latest 追平后，镜像包与官方包 `shasum` 互证一致才算国内面闭环。
+9. **台账**：`box-probe/CHANGES-<日期>.md` 追加 CH 条目（发布链各步证据、镜像状态、用户侧待办）。
