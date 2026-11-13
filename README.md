@@ -67,6 +67,8 @@ npm run release                            # 门禁 + pack + tarball 扫描
 
 两个发布检查在 CI 和 `prepack` 里自动跑，你不用记着手动跑：`check-release-safety` 保证源码和发出去的包里不含本机路径、用户名、macOS 垃圾文件和密钥；`check-version-consistency` 保证 package.json、CHANGELOG、两个 locale 里的版本号一致，`lib/pinned.js` 里钉的版本号格式合法。
 
+每个版本改了什么：看 [CHANGELOG.md](CHANGELOG.md)，重要版本的发布说明在 [Releases](https://github.com/aiohow/dsh-h3-image/releases)。
+
 ---
 
 ## English
@@ -137,3 +139,6 @@ them: `check-release-safety` makes sure the source and the published package are
 local paths, usernames, macOS junk files and secrets; `check-version-consistency` checks
 that the version in package.json, CHANGELOG and both locale files agree, and that the
 pinned revisions in `lib/pinned.js` are well-formed.
+
+What changed in each version: see [CHANGELOG.md](CHANGELOG.md); release notes for the
+milestone versions are on [Releases](https://github.com/aiohow/dsh-h3-image/releases).
