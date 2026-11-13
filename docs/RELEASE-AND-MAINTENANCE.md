@@ -54,6 +54,7 @@
 ## 5. 标准发布链（每次发版逐条执行，纯文案版不豁免）
 
 1. **bump**：`package.json` version + 两个 locale `meta.description` 里的版本串 + CHANGELOG 条目（平实措辞；README 是否动按用户当次拍板）。
+   - **用户预审门禁（2026-11-13 用户指令，任何版本不豁免，纯文案版同样适用）**：发布前把 CHANGELOG 条目 + README 改动（若有）贴给用户过目，用户说"发"才继续走第 2 步之后的链。教训：0.2.14 按"纯文案直接走链"的旧习惯发出去后才被用户要求先看——"发出去前都给我看一下"是硬指令，不是建议。
 2. **三门禁**：`check-version-consistency` / `check-release-safety --all-files` / `npm test`，全绿才许提交。
 3. **commit + push**：英文 Conventional 短句（发布提交用 `chore(release): x.y.z`），推 `origin main`。
 4. **tag（链内步骤，不是收尾动作）**：`git tag vX.Y.Z`——打之前先核验落点提交的 `package.json` version 等于发布版本；`git push origin vX.Y.Z`。（教训：0.2.8 发布漏打 tag 事后补，0.2.9 又漏一次被用户抓出——凡"发版即打 tag"未固化成编号步骤就会漏。）
