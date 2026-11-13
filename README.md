@@ -45,12 +45,16 @@
 
 ### 安装（DSH）
 
-在 DSH 里用 `plugin_manager` 安装，两种来源任选：
+图形界面：设置 → 插件 → 安装，输入 `dsh-h3-image`，装完启用（启用后重启一次 DSH 让工具生效）。
+
+也可以让 agent 用 `plugin_manager` 安装，两种来源任选：
 
 ```
 install_bundle → dsh-h3-image            # 从 npm 装最新发布版
 install_bundle → /path/to/dsh-h3-image   # 或本地仓库/解包目录
 ```
+
+装到旧版多半是 npm 镜像同步滞后（如 npmmirror 比官方源慢几分钟到几小时），切回官方源 `registry.npmjs.org` 重装即可。
 
 然后在 profile 中启用该 bundle，跑一次 `h3_status`——机器还缺什么它会逐项告诉你。
 
@@ -108,12 +112,16 @@ This plugin's **code** is MIT. It does not ship, re-host or re-distribute the mo
 
 ### Install (DSH)
 
-Install with `plugin_manager`, from either source:
+From the GUI: Settings → Plugins → Install, type `dsh-h3-image`, then enable it (restart DSH once so the tools load).
+
+Or let the agent install it with `plugin_manager`, from either source:
 
 ```
 install_bundle → dsh-h3-image            # latest release from npm
 install_bundle → /path/to/dsh-h3-image   # or a local checkout / unpacked dir
 ```
+
+If you end up on an older version, the npm mirror you picked is probably behind the official registry (npmmirror lags by minutes to hours); reinstall from `registry.npmjs.org`.
 
 Then enable the bundle in your profile and run `h3_status` — it tells you exactly what the machine still needs.
 
