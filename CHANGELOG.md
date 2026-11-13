@@ -6,6 +6,11 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 
+## [0.2.2] - 2026-11-13
+
+Add npm search keywords (minimax, minimax-h3-image, h3-image) and
+homepage/bugs links.
+
 ## [0.2.1] - 2026-11-13
 
 License gate now covers both upstream agreements: the quantized text
