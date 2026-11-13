@@ -8,7 +8,7 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [0.2.0] - 2026-11-13
 
-Setup-wizard milestone (M2), accepted via a from-zero bare-metal run.
+Setup wizard, accepted via a from-zero bare-metal run.
 
 ### Added
 - `h3_setup` is now a resumable setup state machine:
@@ -52,7 +52,7 @@ Setup-wizard milestone (M2), accepted via a from-zero bare-metal run.
 
 ## [0.1.0] - 2026-11-12
 
-Generation milestone (M1).
+Generation pipeline.
 
 ### Added
 - `h3_image`: real local text-to-image. Spawns the pinned engine per call
@@ -85,14 +85,14 @@ Generation milestone (M1).
 
 ## [0.0.1] - 2026-11-12
 
-Skeleton milestone (M0).
+Initial plugin scaffold.
 
 ### Added
 - Bundle scaffold: `package.json`, `cordis.patch.yml`, locales (en/zh), icon,
   MIT `LICENSE`, `THIRD_PARTY_NOTICES.md`, `SECURITY.md`.
 - `h3_status` tool: read-only environment check (platform, memory, python,
   engine commit, weights, text encoder, disk) returning a structured
-  red/green checklist. Red items are expected until the setup wizard (M2)
+  red/green checklist. Red items are expected until the setup wizard
   lands.
 - `h3_setup` / `h3_image` registered as explicit not-implemented stubs that
   return structured guidance instead of failing opaquely.

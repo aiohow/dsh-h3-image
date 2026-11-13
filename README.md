@@ -1,5 +1,7 @@
 # dsh-h3-image
 
+**English** | [简体中文](README.zh.md)
+
 > **Name reserved.** This package version (0.2.0) ships the full local
 > pipeline: the read-only environment check, the one-time setup wizard
 > (venv → pinned engine clone → license gate → sha256-verified weight
