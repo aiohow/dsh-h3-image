@@ -6,6 +6,16 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 
+## [0.2.9] - 2026-11-13
+
+### Changed
+- The plugin title now carries the package name in both locales, so the
+  entry in the plugin list matches the npm name for every language.
+
+### Docs
+- Install section covers the GUI path (Settings > Plugins) and notes that
+  an npm mirror can lag behind the official registry.
+
 ## [0.2.8] - 2026-11-13
 
 ### Added
