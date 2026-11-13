@@ -34,7 +34,7 @@
 | 安装期间磁盘 | 峰值约 60 GB |
 | 装完后磁盘 | 约 53 GB（源分片转换完会自动删掉） |
 | 单张图内存（1 MP） | 约 27.5 GB |
-| 每个权重分片（下载 + 转换） | 约 4–5 分钟，看你的网速 |
+| 每个权重分片（下载 + 转换） | 时间跟你的网络环境和机器有关，快慢差别很大；中断可续传 |
 | 第一次出图 | 约 30 秒 |
 
 中断的步骤可以接着来：下到一半断了从 `.part` 继续，下完的分片不会重下。内存那行是引擎自己报的单张图占用。
@@ -101,7 +101,7 @@ Measured on an M5 Ultra with 256 GB of unified memory, from a from-scratch insta
 | Disk during setup | ~60 GB at peak |
 | Disk after setup | ~53 GB (source shards are deleted once converted) |
 | Memory per image (1 MP) | ~27.5 GB |
-| Per weight shard (download + convert) | ~4–5 min, depends on your connection |
+| Per weight shard (download + convert) | Depends on your network and machine; slow and fast setups differ a lot. Interrupted downloads resume. |
 | First image | ~30 s |
 
 Interrupted steps resume: a killed download continues from its `.part`, and finished shards are never re-downloaded. The memory figure is the per-image footprint the engine reports itself.
