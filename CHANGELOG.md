@@ -6,6 +6,50 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-11-13
+
+Setup-wizard milestone (M2), accepted via a from-zero bare-metal run.
+
+### Added
+- `h3_setup` is now a resumable setup state machine:
+  `check → venv → engine → license → weights → smoke`, each step re-probing
+  the disk as its own truth (a step already complete on disk is a `noop`,
+  so re-runs are idempotent and a kill-then-resume never repeats finished
+  work).
+- Detached long jobs for the hour-scale steps (engine install, weight
+  download + conversion, smoke): submit returns a `job_id` in seconds;
+  `action=poll` reads progress from the engine's own on-disk state
+  (`.part` files, `convert_state.json`, the fetch script's done-list) —
+  never from exit codes. Jobs live in a detached supervisor process: a
+  host restart marks their records `interrupted`, never "done", and
+  re-running the same action resumes from `.part` (Range requests;
+  finished shards are never re-fetched — verified zero re-downloads in
+  the acceptance resume audit).
+- Re-entrancy guard: submitting a step while a live job for it exists
+  attaches to the running job instead of starting a second fetch (two
+  fetchers on one `.part` corrupts it — a real incident, now structurally
+  prevented).
+- Reuse probe for the text encoder honours a configurable `scan_dirs`
+  list; an empty list is a true bare-metal simulation (probe must report
+  a miss, never silently reuse).
+- `venv` step discovers a suitable CPython (brew / python.org / uv /
+  pyenv, or an explicit `python_bin` override) and creates an isolated
+  environment without touching any hosted app.
+- Measured resource ledger in the README (disk peak 58.6 GB, steady 53.2
+  GB, per-shard 4–5 min, resume segment 41 min, smoke 30 s wall / 10.8 s
+  engine, 27.5 GB peak per 1 MP image) — all from the acceptance run.
+
+### Changed
+- `LIMITS.diskMinFreeGB` 80 (placeholder) → 60, backfilled from the
+  measured bare-metal peak (58.6 GB decimal, rounded up), per TEST-PLAN's
+  "shipped numbers come from measurement only".
+
+### Fixed
+- `h3_setup action=status|check` and job polling (`running`/`done`/
+  `killed`) now emit the schema-required `message` field — found by live
+  verification after reinstall (the bare-metal driver called the internal
+  API directly and could not see it).
+
 ## [0.1.0] - 2026-11-12
 
 Generation milestone (M1).
