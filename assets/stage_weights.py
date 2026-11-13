@@ -12,12 +12,17 @@ returned without any network access, so the following engine run is instant
 for the main weights while still converting shard by shard as usual.
 
 Endpoint honesty: every endpoint is tried DIRECT first (proxies explicitly
-disabled — a proxy download would silently spend the user's proxy data). Only
-after every endpoint failed direct does one final round run through the system
-proxy, announced by its own line before it starts. Redirects (301/302/303/
-307/308) are followed by hand because urllib does not follow 308, which is
-exactly what a mirror answers for every file; the Range header is kept across
-hops so a resumed download stays resumed through a 308.
+disabled — a proxy download would silently spend the user's proxy data). The
+direct round runs twice: mirrors are often flaky in bursts, and a second
+direct round costs nothing next to silently spending proxy data. Only after
+both direct rounds fail does one final round run through the system proxy,
+announced by its own line before it starts. Redirects (301/302/303/307/308)
+are followed by hand because urllib does not follow 308, which is exactly
+what a mirror answers for every file; the Range header is kept across hops
+so a resumed download stays resumed through a 308. When a redirect chain
+lands on a different host than the endpoint asked for (a mirror bouncing
+users back to the origin), a note line says so — a slow file behind such a
+bounce is the mirror's doing, and the log should not hide it.
 
 File-list truth: imported from the engine script (--engine-script), so a pin
 bump needs no change here.
@@ -27,6 +32,8 @@ Progress contract (parsed by lib/jobs.js, all flushed):
     [stage n/N] placed <name>
     [stage n/N] skipped <name> (already present)
     [stage n/N] switched endpoint: <host>
+    [stage n/N] note: <name> redirected to <host>
+    stage: <name>: direct round failed (<err>); retrying direct once
     stage: retrying via system proxy (may count against proxy data)
     STAGE OK            (terminal, stdout)
     STAGE FAIL <rel>    (terminal, stderr, exit 1)
@@ -113,6 +120,12 @@ def attempt(opener, url: str, dest: Path, part: Path, size: int, sha, name: str,
         have = 0
     headers = {"Range": f"bytes={have}-"} if have else {}
     with open_following(opener, url, headers) as resp:
+        final_host = urllib.parse.urlsplit(resp.geturl()).hostname or host
+        if final_host != host:
+            # A mirror that bounces to another host (typically the origin) is
+            # still "via <mirror>" in the log above; say where the bytes
+            # actually come from so a slow/stalled transfer is attributed right.
+            print(f"[stage {index}/{total}] note: {name} redirected to {final_host}", flush=True)
         resume = bool(have) and getattr(resp, "status", 200) == 206
         with part.open("ab" if resume else "wb") as out:
             while True:
@@ -154,13 +167,19 @@ def stage_file(*, name: str, rel: str, dest: Path, size: int, sha, endpoints,
     last_error = None
     attempts = 0
     direct = build_opener(direct=True)
-    for endpoint in endpoints:
-        try:
-            attempt(direct, url_of(endpoint), dest, part, size, sha, name, index, total, first=attempts == 0)
-            return True
-        except Exception as error:  # noqa: BLE001 — any failure means: next endpoint
-            last_error = error
-            attempts += 1
+    # Two direct rounds before touching the proxy: mirror flakiness is bursty
+    # (a file that times out once often succeeds seconds later), and a second
+    # direct round is free while proxy bytes are not.
+    for round_no in (1, 2):
+        for endpoint in endpoints:
+            try:
+                attempt(direct, url_of(endpoint), dest, part, size, sha, name, index, total, first=attempts == 0)
+                return True
+            except Exception as error:  # noqa: BLE001 — any failure means: next endpoint
+                last_error = error
+                attempts += 1
+        if round_no == 1:
+            print(f"stage: {name}: direct round failed ({last_error}); retrying direct once", flush=True)
     print("stage: retrying via system proxy (may count against proxy data)", flush=True)
     proxied = build_opener(direct=False)
     for endpoint in endpoints:

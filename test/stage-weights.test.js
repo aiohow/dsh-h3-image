@@ -61,12 +61,24 @@ function entry(buf) {
  */
 function startServer(options) {
   const requests = [];
+  const seen = new Map();
   const server = http.createServer((req, res) => {
     requests.push({ url: req.url, range: req.headers.range ?? null });
     if (options.mode === "404") {
       res.writeHead(404);
       res.end("nope");
       return;
+    }
+    if (options.failFirst) {
+      // Bursty-mirror simulation: the first request per path fails, later
+      // ones serve normally (a second direct round recovers).
+      const n = (seen.get(req.url) ?? 0) + 1;
+      seen.set(req.url, n);
+      if (n === 1) {
+        res.writeHead(500);
+        res.end("flaky");
+        return;
+      }
     }
     if (options.mode && options.mode.startsWith("redirect308:")) {
       res.writeHead(308, { Location: options.mode.slice("redirect308:".length) + req.url });
@@ -209,6 +221,23 @@ test("stage: 308 redirect is followed (urllib alone would fail) and Range surviv
   } finally {
     await redirector.close();
     await good.close();
+    await rm(root, { recursive: true, force: true });
+  }
+});
+
+test("stage: bursty mirror (first request per file fails) recovers on the second direct round without touching the proxy", async () => {
+  const { root, modelDir, engineScript } = await setupFixture(FILES);
+  const flaky = await startServer({ files: SERVE, failFirst: true });
+  try {
+    const r = await runDriver({ dir: modelDir, engineScript, endpoints: flaky.url });
+    assert.equal(r.code, 0, r.out + r.err);
+    assert.equal(r.out.trim().split("\n").at(-1), "STAGE OK");
+    // The recovery is announced per file and the proxy round is never mentioned.
+    assert.ok(r.out.includes("direct round failed"));
+    assert.ok(!r.out.includes("system proxy"), "a second direct success must not spend proxy bytes");
+    assert.ok(!r.out.includes("note:")); // same-host redirect chain: no bounce note
+  } finally {
+    await flaky.close();
     await rm(root, { recursive: true, force: true });
   }
 });
