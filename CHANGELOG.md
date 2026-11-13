@@ -6,6 +6,13 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 
+## [0.2.13] - 2026-11-13
+
+Memory is now reported in the unit the box uses. A machine sold as 32 GB
+reports 34.4e9 bytes; dividing by 1e9 showed it as "34 GB" and read like a
+different machine. Thresholds and tiers are unchanged — this is display and
+matching only.
+
 ## [0.2.12] - 2026-11-13
 
 Gate fix found on a 34 GB MacBook Air: a warning-tier check (memory between
