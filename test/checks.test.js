@@ -115,6 +115,30 @@ test("overall: all ok is ready", () => {
   assert.equal(overallOf([{ id: "a", state: "ok" }]), "ready");
 });
 
+test("overall: warning-tier checks do not block ready (34GB Air regression)", () => {
+  const mem = checkMemory({ totalGB: 34 });
+  assert.equal(mem.state, "too_low");
+  assert.equal(mem.warning, true);
+  const checks = [
+    { id: "platform", state: "ok" },
+    mem,
+    { id: "python", state: "ok" },
+    { id: "engine", state: "ok" },
+    { id: "weights", state: "ok" },
+    { id: "text_encoder", state: "ok" },
+    { id: "disk", state: "ok" },
+  ];
+  assert.equal(overallOf(checks), "ready");
+});
+
+test("overall: a real blocker alongside a warning still means setup_required", () => {
+  const checks = [
+    { id: "memory", state: "too_low", warning: true },
+    { id: "weights", state: "missing" },
+  ];
+  assert.equal(overallOf(checks), "setup_required");
+});
+
 test("normalizeMirror: hf / legacy hf-mirror / custom https URL / invalid → hf", () => {
   assert.equal(normalizeMirror("hf"), "hf");
   assert.equal(normalizeMirror(undefined), "hf");
