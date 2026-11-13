@@ -37,7 +37,7 @@
 | 每个权重分片（下载 + 转换） | 时间跟你的网络环境和机器有关，快慢差别很大；中断可续传 |
 | 第一次出图 | 约 30 秒 |
 
-中断的步骤可以接着来：下到一半断了从 `.part` 继续，下完的分片不会重下。内存那行是引擎自己报的单张图占用。
+中断的步骤可以接着来：下到一半断了从 `.part` 继续，下完的分片不会重下。大文件分 4 段并发下载；服务器不支持分段时自动回单线程，行为不变。内存那行是引擎自己报的单张图占用。
 
 ### 许可——下载权重前必读
 
@@ -104,7 +104,7 @@ Measured on an M5 Ultra with 256 GB of unified memory, from a from-scratch insta
 | Per weight shard (download + convert) | Depends on your network and machine; slow and fast setups differ a lot. Interrupted downloads resume. |
 | First image | ~30 s |
 
-Interrupted steps resume: a killed download continues from its `.part`, and finished shards are never re-downloaded. The memory figure is the per-image footprint the engine reports itself.
+Interrupted steps resume: a killed download continues from its `.part`, and finished shards are never re-downloaded. Large files download in 4 parallel segments; if the server doesn't support ranged segments, it falls back to a single connection automatically. The memory figure is the per-image footprint the engine reports itself.
 
 ### Licenses — read before downloading weights
 

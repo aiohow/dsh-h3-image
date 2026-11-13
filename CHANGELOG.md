@@ -6,6 +6,24 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 
+## [0.2.11] - 2026-11-13
+
+Large files (64 MB and up) now download in 4 concurrent byte-range segments,
+each with its own resumable part file; once all segments are in they are
+stitched and go through the same size + sha256 verification as before. A
+server that answers a Range request with 200 is treated as lacking the
+capability: the segment parts are cleaned and the untouched single-stream
+path takes over. Small files, the endpoint ladder (two direct rounds, then
+one announced system-proxy round) and every progress line are unchanged.
+Stitching briefly needs roughly one extra copy of the file on disk.
+
+- README: the per-shard time estimate is replaced with an honest statement
+  that download time depends on your network and machine; the segmented
+  download and its automatic fallback are documented.
+- Three new tests: segmented byte-exactness with exact closed-range tiling,
+  the 200 fallback to single stream, and a half-written segment resuming
+  with a Range pinned to its own end.
+
 ## [0.2.10] - 2026-11-13
 
 Staging driver hardening from a real-world mirror outage (a user's download
